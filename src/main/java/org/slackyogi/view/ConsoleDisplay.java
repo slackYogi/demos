@@ -1,11 +1,14 @@
 package org.slackyogi.view;
 
+import org.slackyogi.view.enums.MainMenuOptions;
+import org.slackyogi.view.enums.Messages;
+
 public class ConsoleDisplay {
     private static boolean isWorking;
 
     public static void start() {
         isWorking = true;
-        System.out.println("Welcome!"); //TODO Change to enum Messages
+        System.out.println(Messages.WELCOMING.getMessage());
         displayLoop();
     }
 
@@ -13,9 +16,9 @@ public class ConsoleDisplay {
         while (isWorking) {
             printMenu();
             try {
-                actOnUsersChoice(InputManager.getIntInput());    //TODO add enum for possible options
+                actOnUsersChoice(InputManager.getIntInput());
             } catch (IllegalArgumentException ex) {
-                System.err.println("You did not enter a number."); //TODO -> to enum
+                System.err.println(Messages.ERROR_NOT_NUMBER);
             }
         }
     }
@@ -26,7 +29,10 @@ public class ConsoleDisplay {
     }
 
     private static void printMenu() {
-        System.out.println("Choose option:");
+        System.out.println(Messages.MENU_OPTIONS.getMessage());
+        for (MainMenuOptions option: MainMenuOptions.values()) {
+            System.out.println(option.getId() + ". " + option.getMessage());
+        }
     }
 
 
