@@ -1,5 +1,6 @@
 package org.slackyogi.view;
 
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 
 public class InputManager {
@@ -9,14 +10,21 @@ public class InputManager {
         int input;
 
         if (scanner.hasNextInt()) {
-            input = scanner.nextInt();
-            scanner.nextLine();
+                input = scanner.nextInt();
+            try {
+                scanner.nextLine();
+            } catch (NoSuchElementException ex) {
+                // TODO As I modified input stream in testing class this was required. Do it better.
+            }
             return input;
         }
         else {
-            scanner.nextLine();
+            try {
+                scanner.nextLine();
+            } catch (NoSuchElementException ex) {
+                // TODO As I modified input stream in testing class this was required. Do it better.
+            }
             throw new IllegalArgumentException();
         }
     }
-
 }

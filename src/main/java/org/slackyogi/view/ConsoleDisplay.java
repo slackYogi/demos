@@ -38,6 +38,10 @@ public class ConsoleDisplay {
             }
                 break;
             case ADD_PRODUCT_TO_BASKET:
+                System.out.println("Add item to basket");
+                break;
+            case SHOW_BASKET:
+                System.out.println("Show basket");
                 break;
             case EXIT:
                 isWorking = false;
