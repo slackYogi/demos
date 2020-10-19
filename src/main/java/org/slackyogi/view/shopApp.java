@@ -1,7 +1,8 @@
 package org.slackyogi.view;
 
 public class shopApp {
-    public static void main(String[] args) {
 
+    public static void main(String[] args) {
+        ConsoleDisplay.start();
     }
 }
