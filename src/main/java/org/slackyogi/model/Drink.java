@@ -1,4 +1,5 @@
-package org.slackyogi.model.enums;
+package org.slackyogi.model;
 
-public class Drink {
+public class Drink extends Product {
+    double capacity;
 }

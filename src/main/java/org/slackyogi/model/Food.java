@@ -1,6 +1,5 @@
-package org.slackyogi.model.enums;
-
-import org.slackyogi.model.Product;
+package org.slackyogi.model;
 
 public class Food extends Product {
+    double mass;
 }

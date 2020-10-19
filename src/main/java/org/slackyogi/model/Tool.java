@@ -1,4 +1,8 @@
 package org.slackyogi.model;
 
-public class Tool {
+import org.slackyogi.model.enums.ToolType;
+
+public class Tool extends Product {
+    ToolType type;
+    double mass;
 }

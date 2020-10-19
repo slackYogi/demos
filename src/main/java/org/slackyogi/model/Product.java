@@ -1,4 +1,11 @@
 package org.slackyogi.model;
 
-public class Product {
+import java.util.UUID;
+
+public abstract class Product {
+    UUID id;
+    String name;
+    double price;
+
+
 }
