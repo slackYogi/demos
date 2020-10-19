@@ -1,14 +1,14 @@
 package org.slackyogi.view;
 
 import org.slackyogi.view.enums.MainMenuOptions;
-import org.slackyogi.view.enums.Messages;
+import static org.slackyogi.view.enums.Messages.*;
 
 public class ConsoleDisplay {
     private static boolean isWorking;
 
     public static void start() {
         isWorking = true;
-        System.out.println(Messages.WELCOMING.getMessage());
+        System.out.println(WELCOMING.getMessage());
         displayLoop();
     }
 
@@ -16,26 +16,36 @@ public class ConsoleDisplay {
         while (isWorking) {
             printMenu();
             try {
-                actOnUsersChoice(InputManager.getIntInput());
+            MainMenuOptions
+                    .fromNumber(InputManager.getIntInput())
+                    .ifPresentOrElse(option -> actOnUsersChoice(option),
+                            () -> System.err.println(ERROR_ENTER_NUMBER_FROM_RANGE.getMessage()));
             } catch (IllegalArgumentException ex) {
-                System.err.println(Messages.ERROR_NOT_NUMBER);
+                System.err.println(ERROR_NOT_NUMBER.getMessage());
             }
         }
     }
 
-    private static void actOnUsersChoice(int i) {
-        if (i == 0)
-            isWorking = false;
-    }
-
-    private static void printMenu() {
-        System.out.println(Messages.MENU_OPTIONS.getMessage());
-        for (MainMenuOptions option: MainMenuOptions.values()) {
-            System.out.println(option.getId() + ". " + option.getMessage());
+    private static void actOnUsersChoice(MainMenuOptions option) {
+        switch (option) {
+            case VIEW_LIST_OF_ALL_PRODUCTS:
+                break;
+            case ADD_PRODUCT_TO_BASKET:
+                break;
+            case EXIT:
+                isWorking = false;
+                break;
+            default:
+                break;
         }
     }
 
-
+    private static void printMenu() {
+        System.out.println(MENU_OPTIONS.getMessage());
+        for (MainMenuOptions option : MainMenuOptions.values()) {
+            System.out.println(option.getId() + ". " + option.getMessage());
+        }
+    }
 
 
 }

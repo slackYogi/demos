@@ -10,6 +10,7 @@ public class InputManager {
 
         if (scanner.hasNextInt()) {
             input = scanner.nextInt();
+            scanner.nextLine();
             return input;
         }
         else {
