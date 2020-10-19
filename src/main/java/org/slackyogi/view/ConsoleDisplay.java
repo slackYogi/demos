@@ -1,10 +1,14 @@
 package org.slackyogi.view;
 
+import org.slackyogi.data.ProductRepository;
+import org.slackyogi.model.Product;
 import org.slackyogi.view.enums.MainMenuOptions;
+
 import static org.slackyogi.view.enums.Messages.*;
 
 public class ConsoleDisplay {
     private static boolean isWorking;
+    private static ProductRepository productRepository = new ProductRepository();
 
     public static void start() {
         isWorking = true;
@@ -29,6 +33,9 @@ public class ConsoleDisplay {
     private static void actOnUsersChoice(MainMenuOptions option) {
         switch (option) {
             case VIEW_LIST_OF_ALL_PRODUCTS:
+                for (Product product : productRepository.findAll()){
+                    System.out.println(product);
+            }
                 break;
             case ADD_PRODUCT_TO_BASKET:
                 break;
