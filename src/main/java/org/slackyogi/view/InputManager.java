@@ -1,5 +1,6 @@
 package org.slackyogi.view;
 
+import java.util.InputMismatchException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.Scanner;
@@ -14,9 +15,8 @@ public class InputManager {
             return Optional.empty();
     }
 
-    public static int getIntInput() throws IllegalArgumentException { //TODO extract generic method to get number int or double?
+    public static int getIntInput() throws InputMismatchException { //TODO extract generic method to get number int or double?
         int input;
-
         if (scanner.hasNextInt()) {
             input = scanner.nextInt();
             try {
@@ -31,21 +31,23 @@ public class InputManager {
             } catch (NoSuchElementException ex) {
                 // TODO As I modified input stream in testing class this was required. Do it better.
             }
-            throw new IllegalArgumentException();
+            throw new InputMismatchException();
         }
     }
 
-
+    public static void close() {
+        scanner.close();
+    }
 
     public static double getDoubleInput() throws IllegalArgumentException {
         double input;
 
         if (scanner.hasNextDouble()) {
             input = scanner.nextDouble();
-                scanner.nextLine();
+            scanner.nextLine();
             return input;
         } else {
-                scanner.nextLine();
+            scanner.nextLine();
             throw new IllegalArgumentException();
         }
     }

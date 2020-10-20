@@ -1,10 +1,10 @@
 package org.slackyogi.model;
 
-public class BasketItem {
+public class OrderItem {
     private String name;
     private int quantity;
 
-    public BasketItem(String name, int quantity) {
+    public OrderItem(String name, int quantity) {
         this.name = name;
         this.quantity = quantity;
     }
