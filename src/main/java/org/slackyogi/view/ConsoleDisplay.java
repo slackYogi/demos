@@ -14,24 +14,30 @@ public class ConsoleDisplay {
     private static boolean isWorking;
     private static ProductRepository productRepository = new ProductRepository();
     private static Basket basket = new Basket();
+    private static boolean adminUser = false;
 
     public static void start() {
         isWorking = true;
-        System.out.println(WELCOMING.getMessage());
+        loggingIn();
         displayLoop();
     }
+
+
 
     private static void displayLoop() {
         while (isWorking) {
             printMenu();
-            try {
-                MainMenuOptions
-                        .fromNumber(InputManager.getIntInput())
-                        .ifPresentOrElse(option -> actOnUsersChoice(option),
-                                () -> System.err.println(ERROR_ENTER_NUMBER_FROM_RANGE.getMessage()));
-            } catch (IllegalArgumentException ex) {
-                System.err.println(ERROR_NOT_NUMBER.getMessage());
-            }
+            getUsersChoice();
+        }
+    }
+
+    private static void getUsersChoice() {
+        try {
+            MainMenuOptions.fromNumber(InputManager.getIntInput())
+                    .ifPresentOrElse(option -> actOnUsersChoice(option),
+                            () -> System.err.println(ERROR_ENTER_NUMBER_FROM_RANGE.getMessage()));
+        } catch (IllegalArgumentException ex) {
+            System.err.println(ERROR_NOT_NUMBER.getMessage());
         }
     }
 
@@ -58,7 +64,7 @@ public class ConsoleDisplay {
     }
 
     private static void removeItemFromBasket() {
-        BasketItem basketItem = getBasketItemData();
+        BasketItem basketItem = getBasketItemData();            //TODO try to remove model information from view
         if (basketItemHasCorrectData(basketItem)) {
             productRepository.findByName(basketItem.getName())
                     .ifPresentOrElse(product -> basket.removeItem(product, basketItem.getQuantity()),
@@ -120,5 +126,17 @@ public class ConsoleDisplay {
         for (Product product : basketItems.keySet()) {
             System.out.println("Item: " + product.getName() + " in " + basketItems.get(product) + " quantity.");
         }
+    }
+
+    private static void loggingIn() {
+        System.out.println(LOGGING.getMessage());
+        String login = InputManager.getStringInput().orElse("guest");
+        if (login.equals("admin")) {
+            System.out.println(LOGGED_EMPLOYEE.getMessage());
+            adminUser = true;
+        } else {
+            System.out.println(LOGGED_CLIENT.getMessage());
+        }
+        System.out.println(WELCOMING.getMessage() + login + "!");
     }
 }

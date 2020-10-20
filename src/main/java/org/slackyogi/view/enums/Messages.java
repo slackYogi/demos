@@ -1,7 +1,10 @@
 package org.slackyogi.view.enums;
 
 public enum Messages {
-    WELCOMING("Welcome!"),
+    LOGGING("Please enter login (admin for employees):"),
+    LOGGED_CLIENT("You are logged as client."),
+    LOGGED_EMPLOYEE("You are logged as employee."),
+    WELCOMING("Welcome, "),
     MENU_OPTIONS("Choose option:"),
     COLUMNS_OF_PRODUCTS_LISTING("Product:\t\tPrice:"), //TODO create method in Product class to get this string, making it not magical
     ADDING_TO_BASKET_PRODUCT_NAME("Enter desired product name:"),
