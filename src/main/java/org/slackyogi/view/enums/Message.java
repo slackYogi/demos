@@ -7,9 +7,10 @@ public enum Message {
     WELCOMING("Welcome, "),
     MENU_OPTIONS("Choose option:"),
     COLUMNS_OF_PRODUCTS_LISTING("Product:\t\tPrice:"), //TODO create method in Product class to get this string, making it not magical
-    TYPE_SEARCHED_PRODUCT_NAME("Please, enter a name of product you want to find:"),
+    ENTER_SEARCHED_PRODUCT_NAME("Please, enter a name of product you want to find:"),
+    ENTER_PRODUCT_NAME_FOR_DELETION("Please, enter a name of product you want to delete:"),
     SEARCHED_PRODUCT_IS_AVAILABLE("Inquired product is available"),
-    SEARCHED_PRODUCT_IS_NOT_AVAILABLE("No such product is available in store."),
+    NO_SUCH_PRODUCT_AVAILABLE("No such product is available in store."),
     ADDING_TO_BASKET_PRODUCT_NAME("Enter desired product name:"),
     ADDING_TO_BASKET_PRODUCT_QUANTITY("Enter quantity of product:"),
     CREATING_PRODUCT_AVAILABLE_TYPES("Available types of products are:"),

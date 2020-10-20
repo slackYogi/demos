@@ -44,10 +44,10 @@ public class ConsoleDisplay {
                 viewListOfAllProducts();
                 break;
             case PRODUCT_EXISTS_IN_STORE:
-                System.out.println(TYPE_SEARCHED_PRODUCT_NAME.getMessage());
+                System.out.println(ENTER_SEARCHED_PRODUCT_NAME.getMessage());
                 System.out.println((isProductAvailable())
                         ? SEARCHED_PRODUCT_IS_AVAILABLE.getMessage()
-                        : SEARCHED_PRODUCT_IS_NOT_AVAILABLE.getMessage());
+                        : NO_SUCH_PRODUCT_AVAILABLE.getMessage());
                 break;
             case ADD_PRODUCT_TO_BASKET:
                 addProductToBasket();
@@ -71,8 +71,15 @@ public class ConsoleDisplay {
                 break;
             case REMOVE_PRODUCT_FROM_STORE:
                 if (adminUser) {
-                    //TODO
-                    System.out.println(1);
+                    System.out.println(ENTER_PRODUCT_NAME_FOR_DELETION.getMessage());
+                    Optional<Product> productToBeDeleted = productRepository.findByName(InputManager.getStringInput().orElse(""));
+                    if(productToBeDeleted.isPresent())
+                    {
+                        productRepository.delete(productToBeDeleted.get());
+                    }
+                    else {
+                        System.out.println(NO_SUCH_PRODUCT_AVAILABLE.getMessage());
+                    }
                 }
                 break;
             case RELOG:
