@@ -7,7 +7,14 @@ import java.util.Scanner;
 public class InputManager {
     private static Scanner scanner = new Scanner(System.in);
 
-    public static int getIntInput() throws IllegalArgumentException {
+    public static Optional<String> getStringInput() {
+        if (scanner.hasNext()) {
+            return Optional.of(scanner.nextLine());
+        } else
+            return Optional.empty();
+    }
+
+    public static int getIntInput() throws IllegalArgumentException { //TODO extract generic method to get number int or double?
         int input;
 
         if (scanner.hasNextInt()) {
@@ -28,10 +35,18 @@ public class InputManager {
         }
     }
 
-    public static Optional<String> getStringInput() {
-        if (scanner.hasNext()) {
-            return Optional.of(scanner.nextLine());
-        } else
-            return Optional.empty();
+
+
+    public static double getDoubleInput() throws IllegalArgumentException {
+        double input;
+
+        if (scanner.hasNextDouble()) {
+            input = scanner.nextDouble();
+                scanner.nextLine();
+            return input;
+        } else {
+                scanner.nextLine();
+            throw new IllegalArgumentException();
+        }
     }
 }

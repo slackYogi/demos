@@ -8,7 +8,6 @@ public abstract class Product implements Comparable<Product> {
     String name;
     double price;
 
-
     public String getName() {
         return name;
     }
@@ -18,9 +17,7 @@ public abstract class Product implements Comparable<Product> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         Product product = (Product) o;
-        return Double.compare(product.price, price) == 0 &&
-                id.equals(product.id) &&
-                Objects.equals(name, product.name);
+        return name.equals(product.name);
     }
 
     @Override

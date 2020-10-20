@@ -1,28 +1,26 @@
 package org.slackyogi.view;
 
 import org.slackyogi.data.ProductRepository;
-import org.slackyogi.model.Basket;
-import org.slackyogi.model.BasketItem;
-import org.slackyogi.model.Product;
-import org.slackyogi.view.enums.MainMenuOptions;
+import org.slackyogi.model.*;
+import org.slackyogi.model.enums.ProductType;
+import org.slackyogi.view.enums.MainMenuOption;
 
 import java.util.Map;
+import java.util.Optional;
 
-import static org.slackyogi.view.enums.Messages.*;
+import static org.slackyogi.view.enums.Message.*;
 
 public class ConsoleDisplay {
     private static boolean isWorking;
     private static ProductRepository productRepository = new ProductRepository();
     private static Basket basket = new Basket();
-    private static boolean adminUser = false;
+    private static boolean adminUser;
 
     public static void start() {
         isWorking = true;
         loggingIn();
         displayLoop();
     }
-
-
 
     private static void displayLoop() {
         while (isWorking) {
@@ -33,7 +31,7 @@ public class ConsoleDisplay {
 
     private static void getUsersChoice() {
         try {
-            MainMenuOptions.fromNumber(InputManager.getIntInput())
+            MainMenuOption.fromNumber(InputManager.getIntInput())
                     .ifPresentOrElse(option -> actOnUsersChoice(option),
                             () -> System.err.println(ERROR_ENTER_NUMBER_FROM_RANGE.getMessage()));
         } catch (IllegalArgumentException ex) {
@@ -41,7 +39,7 @@ public class ConsoleDisplay {
         }
     }
 
-    private static void actOnUsersChoice(MainMenuOptions option) { //TODO Instead of switch create abstract class Page and Pages for each switch case?
+    private static void actOnUsersChoice(MainMenuOption option) { //TODO Instead of switch create abstract class Page and Pages for each switch case?
         switch (option) {
             case VIEW_LIST_OF_ALL_PRODUCTS:
                 viewListOfAllProducts();
@@ -55,11 +53,104 @@ public class ConsoleDisplay {
             case REMOVE_ITEM_FROM_BASKET:
                 removeItemFromBasket();
                 break;
+            case ADD_PRODUCT_TO_STORE:
+                if (adminUser) {
+                    addProductToStore();
+                }
+                break;
+            case FIND_PRODUCT_IN_STORE:
+                if (adminUser) {
+                    System.out.println(3);
+                }
+                break;
+            case EDIT_PRODUCT_IN_STORE:
+                if (adminUser) {
+                    System.out.println(2);
+                }
+                break;
+            case REMOVE_PRODUCT_FROM_STORE:
+                if (adminUser) {
+                    System.out.println(1);
+                }
+                break;
+            case RELOG:
+                adminUser = false;
+                start();
+                break;
             case EXIT:
                 isWorking = false;
                 break;
             default:
                 break;
+        }
+    }
+
+    private static void addProductToStore() {
+        viewTypesForNewProducts();
+        System.out.println(CREATING_PRODUCT_OF_A_TYPE.getMessage());
+
+        Optional<ProductType> optionalType = ProductType
+                .fromString(InputManager.getStringInput()
+                        .orElse(""));
+
+        if (optionalType.isPresent()){
+            switch (optionalType.get()) {
+                case FOOD:
+                    Optional<Food> foodProduct = getFoodDataFromUser();
+                    if (foodProduct.isPresent()) {
+                        productRepository.addProduct(foodProduct.get());
+                    } else {
+                        System.err.println(ERROR_WRONG_INPUT_PRODUCT_CREATION.getMessage());
+                    }
+                    break;
+                case DRINK:
+                    Optional<Drink> drinkProduct = getDrinkDataFromUser();
+                    if (drinkProduct.isPresent()) {
+                        productRepository.addProduct(drinkProduct.get());
+                    } else {
+                        System.err.println(ERROR_WRONG_INPUT_PRODUCT_CREATION.getMessage());
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    private static Optional<Food> getFoodDataFromUser() {
+        System.out.println(CREATING_PRODUCT_NAME.getMessage()); //TODO change entering values as one string?
+        String name = InputManager.getStringInput().orElse("");
+
+        System.out.println(CREATING_PRODUCT_PRICE.getMessage());
+        double price = InputManager.getDoubleInput();
+
+        System.out.println(CREATING_FOOD_MASS.getMessage());
+        double mass = InputManager.getDoubleInput();
+
+        if (!name.isBlank() && price > 0 && mass > 0)
+            return Optional.of(new Food(name, price, mass));
+        return Optional.empty();
+    }
+
+    private static Optional<Drink> getDrinkDataFromUser() {      //TODO some generic method?
+        System.out.println(CREATING_PRODUCT_NAME.getMessage()); //TODO change entering values as one string?
+        String name = InputManager.getStringInput().orElse("");
+
+        System.out.println(CREATING_PRODUCT_PRICE.getMessage());
+        double price = InputManager.getDoubleInput();
+
+        System.out.println(CREATING_DRINK_CAPACITY.getMessage());
+        double capacity = InputManager.getDoubleInput();
+
+        if (!name.isBlank() && price > 0 && capacity > 0)
+            return Optional.of(new Drink(name, price, capacity));
+        return Optional.empty();
+    }
+
+    private static void viewTypesForNewProducts() {
+        System.out.println(CREATING_PRODUCT_AVAILABLE_TYPES.getMessage());
+        for (ProductType type: ProductType.values()) {
+            System.out.println(type.getDescription());
         }
     }
 
@@ -80,7 +171,7 @@ public class ConsoleDisplay {
             productRepository.findByName(basketItem.getName())
                     .ifPresentOrElse(product -> basket.addItem(product, basketItem.getQuantity()),
                             () -> System.err.println(ERROR_NO_SUCH_ITEM_IN_STORE.getMessage() + basketItem.getName()));
-                                                                                             //TODO check if there is enough quantity of product
+            //TODO check if there is enough quantity of product
             System.out.println("Added " + basketItem.getQuantity() + " " + basketItem.getName() + " to basket."); //TODO add 's' for plural items
         }
     }
@@ -109,8 +200,14 @@ public class ConsoleDisplay {
 
     private static void printMenu() {
         System.out.println(MENU_OPTIONS.getMessage());
-        for (MainMenuOptions option : MainMenuOptions.values()) {
-            System.out.println(option.getId() + ". " + option.getMessage());
+        for (MainMenuOption option : MainMenuOption.values()) {
+            if (!option.requiresAdmin())
+                System.out.println(option.getId() + ". " + option.getMessage());
+            else {
+                if (adminUser) {
+                    System.out.println(option.getId() + ". " + option.getMessage());
+                }
+            }
         }
     }
 

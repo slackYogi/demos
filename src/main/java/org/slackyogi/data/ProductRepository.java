@@ -14,7 +14,7 @@ public class ProductRepository {
 
     private static TreeSet<Product> products = new TreeSet<>(); // TODO move database out of memory
 
-    private static TreeSet<Product> getProducts() {             //TODO do not allow access to products
+    public TreeSet<Product> getProducts() {             //TODO do not allow access to products
         return products;
     }
 
@@ -23,11 +23,12 @@ public class ProductRepository {
     }
 
     public void addProduct(Product product) {
-        // products.add(product);                               // TODO implement this
+        if (product != null)
+            products.add(product);
     }
 
     public Optional<Product> findByName(String name) {
-        for (Product product: getProducts()) {
+        for (Product product : getProducts()) {
 
             if (product.getName().equals(name)) {
                 return Optional.of(product);
@@ -45,7 +46,7 @@ public class ProductRepository {
     }
 
     public void delete(Product product) {
-                                                                    // TODO implement this
+        // TODO implement this
     }
 
     public boolean exists(UUID primaryKey) {
@@ -54,13 +55,13 @@ public class ProductRepository {
 
     private static TreeSet<Product> fetchDataFromFakeDB() {
         Stream<Product> products = Stream.of(new Food("Banana", 2.0, 0.5),
-                (new Food("Flour",1.0,1.0)),
-        (new Food("Coffee",12.5,0.7)),
-        (new Food("Egg",0.2,0.1)),
-        (new Food("Tomato",1.6,0.2)),
-        (new Food("Cookies",5.1,0.8)),
-        (new Drink("Milk",1.1,1.0)),
-        (new Drink("Coola",2.0,3.3)));
+                (new Food("Flour", 1.0, 1.0)),
+                (new Food("Coffee", 12.5, 0.7)),
+                (new Food("Egg", 0.2, 0.1)),
+                (new Food("Tomato", 1.6, 0.2)),
+                (new Food("Cookies", 5.1, 0.8)),
+                (new Drink("Milk", 1.1, 1.0)),
+                (new Drink("Coola", 2.0, 3.3)));
         return products.collect(Collectors.toCollection(TreeSet::new));
 
     }
