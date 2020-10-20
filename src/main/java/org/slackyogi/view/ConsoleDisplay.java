@@ -2,6 +2,7 @@ package org.slackyogi.view;
 
 import org.slackyogi.data.ProductRepository;
 import org.slackyogi.model.Basket;
+import org.slackyogi.model.BasketItem;
 import org.slackyogi.model.Product;
 import org.slackyogi.view.enums.MainMenuOptions;
 
@@ -34,7 +35,7 @@ public class ConsoleDisplay {
         }
     }
 
-    private static void actOnUsersChoice(MainMenuOptions option) {
+    private static void actOnUsersChoice(MainMenuOptions option) { //TODO Instead of switch create abstract class Page and Pages for each switch case?
         switch (option) {
             case VIEW_LIST_OF_ALL_PRODUCTS:
                 viewListOfAllProducts();
@@ -45,6 +46,9 @@ public class ConsoleDisplay {
             case VIEW_BASKET:
                 viewItemsInBasket(basket.getItemsInBasket());
                 break;
+            case REMOVE_ITEM_FROM_BASKET:
+                removeItemFromBasket();
+                break;
             case EXIT:
                 isWorking = false;
                 break;
@@ -53,25 +57,48 @@ public class ConsoleDisplay {
         }
     }
 
-    private static void addProductToBasket() {                      // TODO consider creating Order class
+    private static void removeItemFromBasket() {
+        BasketItem basketItem = getBasketItemData();
+        if (basketItemHasCorrectData(basketItem)) {
+            productRepository.findByName(basketItem.getName())
+                    .ifPresentOrElse(product -> basket.removeItem(product, basketItem.getQuantity()),
+                            () -> System.err.println(ERROR_NO_SUCH_ITEM_IN_STORE.getMessage() + basketItem.getName()));
+
+            System.out.println("Removed " + basketItem.getQuantity() + " " + basketItem.getName() + " from basket."); //TODO Give proper information if some items remained in basker
+        }
+    }
+
+    private static void addProductToBasket() {                      // TODO consider extracting this to Order class
+        BasketItem basketItem = getBasketItemData();
+        if (basketItemHasCorrectData(basketItem)) {
+            productRepository.findByName(basketItem.getName())
+                    .ifPresentOrElse(product -> basket.addItem(product, basketItem.getQuantity()),
+                            () -> System.err.println(ERROR_NO_SUCH_ITEM_IN_STORE.getMessage() + basketItem.getName()));
+                                                                                             //TODO check if there is enough quantity of product
+            System.out.println("Added " + basketItem.getQuantity() + " " + basketItem.getName() + " to basket."); //TODO add 's' for plural items
+        }
+    }
+
+    private static boolean basketItemHasCorrectData(BasketItem basketItem) {
+        if (basketItem.getName().trim().isBlank()) {
+            System.err.println(ERROR_MODIFYING_BASKET_WRONG_NAME.getMessage());
+            return false;
+        } else if (basketItem.getQuantity() <= 0) {
+            System.err.println(ERROR_ADDING_TO_BASKET_WRONG_QUANTITY.getMessage());
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private static BasketItem getBasketItemData() {
         System.out.println(ADDING_TO_BASKET_PRODUCT_NAME.getMessage());
         String name = InputManager.getStringInput().orElse("");
 
         System.out.println(ADDING_TO_BASKET_PRODUCT_QUANTITY.getMessage());
         int quantity = InputManager.getIntInput();
 
-        if (name.trim().isBlank()) {
-            System.err.println(ERROR_ADDING_TO_BASKET_WRONG_NAME.getMessage());
-        }
-        else if (quantity <= 0) {
-            System.err.println(ERROR_ADDING_TO_BASKET_WRONG_QUANTITY.getMessage());
-        } else {
-            productRepository.findByName(name)
-                    .ifPresentOrElse(product -> basket.addItem(product, quantity),
-                            () -> System.err.println(ERROR_NO_SUCH_ITEM_IN_STORE.getMessage() + name));
-                                                                     //TODO check if there is enough quantity of product
-            System.out.println("Added " + quantity + " " + name + " to basket.");
-        }
+        return new BasketItem(name, quantity);
     }
 
     private static void printMenu() {
