@@ -47,8 +47,11 @@ public class ProductRepository {
         }
     }
 
-    public void update(Product product) {
-        // TODO implement this
+    public void update(Product oldProduct, Product newProduct) {
+        if (newProduct != null && products.contains(oldProduct)) {
+            products.remove(oldProduct);
+            products.add(newProduct);
+        }
     }
 
     public boolean exists(UUID primaryKey) {

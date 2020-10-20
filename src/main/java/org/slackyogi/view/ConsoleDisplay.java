@@ -7,13 +7,14 @@ import org.slackyogi.view.enums.MainMenuOption;
 
 import java.util.Map;
 import java.util.Optional;
+
 import static org.slackyogi.view.enums.Message.*;
 
 public class ConsoleDisplay {
     private static boolean isWorking;
     private static ProductRepository productRepository = new ProductRepository();
     private static Basket basket = new Basket();
-    private static boolean adminUser;
+    private static boolean userIsAdmin;
 
     public static void start() {
         isWorking = true;
@@ -47,7 +48,7 @@ public class ConsoleDisplay {
                 System.out.println(ENTER_SEARCHED_PRODUCT_NAME.getMessage());
                 System.out.println((isProductAvailable())
                         ? SEARCHED_PRODUCT_IS_AVAILABLE.getMessage()
-                        : NO_SUCH_PRODUCT_AVAILABLE.getMessage());
+                        : ERROR_NO_SUCH_PRODUCT_AVAILABLE.getMessage());
                 break;
             case ADD_PRODUCT_TO_BASKET:
                 addProductToBasket();
@@ -59,31 +60,43 @@ public class ConsoleDisplay {
                 removeItemFromBasket();
                 break;
             case ADD_PRODUCT_TO_STORE:
-                if (adminUser) {
+                if (userIsAdmin) {
                     addProductToStore();
                 }
                 break;
             case EDIT_PRODUCT_IN_STORE:
-                if (adminUser) {
-                    //TODO
-                    System.out.println(2);
+                if (userIsAdmin) {
+                    System.out.println(ENTER_PRODUCT_NAME_TO_BE_UPDATED.getMessage());
+                    Optional<Product> productToBeModified = getProductByName();
+                    if (productToBeModified.isPresent()) {
+
+                        if (productToBeModified.get().getClass().getSimpleName().equals(Food.class.getSimpleName())) {
+                            Optional<Food> food = getFoodDataFromUser();
+                            if (food.isPresent()) {
+                                Product newProduct = food.get();
+                                productRepository.update(productToBeModified.get(), newProduct);
+                            }
+
+                        } else if (productToBeModified.get().getClass().getSimpleName().equals(Drink.class.getSimpleName())) {
+                            Optional<Drink> drink = getDrinkDataFromUser();                                 //TODO eliminate this repetition
+                            if (drink.isPresent()) {
+                                Product newProduct = drink.get();
+                                productRepository.update(productToBeModified.get(), newProduct);
+                            }
+                        } else {
+                            System.err.println(ERROR_NO_SUCH_PRODUCT_AVAILABLE.getMessage());
+                        }
+                    }
                 }
                 break;
             case REMOVE_PRODUCT_FROM_STORE:
-                if (adminUser) {
+                if (userIsAdmin) {
                     System.out.println(ENTER_PRODUCT_NAME_FOR_DELETION.getMessage());
-                    Optional<Product> productToBeDeleted = productRepository.findByName(InputManager.getStringInput().orElse(""));
-                    if(productToBeDeleted.isPresent())
-                    {
-                        productRepository.delete(productToBeDeleted.get());
-                    }
-                    else {
-                        System.out.println(NO_SUCH_PRODUCT_AVAILABLE.getMessage());
-                    }
+                    tryToDeleteProduct(productRepository.findByName(InputManager.getStringInput().orElse("")));
                 }
                 break;
             case RELOG:
-                adminUser = false;
+                userIsAdmin = false;
                 start();
                 break;
             case EXIT:
@@ -91,6 +104,14 @@ public class ConsoleDisplay {
                 break;
             default:
                 break;
+        }
+    }
+
+    private static void tryToDeleteProduct(Optional<Product> productToBeDeleted) {
+        if (productToBeDeleted.isPresent()) {
+            productRepository.delete(productToBeDeleted.get());
+        } else {
+            System.out.println(ERROR_NO_SUCH_PRODUCT_AVAILABLE.getMessage());
         }
     }
 
@@ -106,7 +127,7 @@ public class ConsoleDisplay {
                 .fromString(InputManager.getStringInput()
                         .orElse(""));
 
-        if (optionalType.isPresent()){
+        if (optionalType.isPresent()) {
             switch (optionalType.get()) {
                 case FOOD:
                     Optional<Food> foodProduct = getFoodDataFromUser();
@@ -162,7 +183,7 @@ public class ConsoleDisplay {
 
     private static void viewTypesForNewProducts() {
         System.out.println(CREATING_PRODUCT_AVAILABLE_TYPES.getMessage());
-        for (ProductType type: ProductType.values()) {
+        for (ProductType type : ProductType.values()) {
             System.out.println(type.getDescription());
         }
     }
@@ -201,6 +222,10 @@ public class ConsoleDisplay {
         }
     }
 
+    private static Optional<Product> getProductByName() {
+        return productRepository.findByName(InputManager.getStringInput().orElse(""));
+    }
+
     private static BasketItem getBasketItemData() {
         System.out.println(ADDING_TO_BASKET_PRODUCT_NAME.getMessage());
         String name = InputManager.getStringInput().orElse("");
@@ -217,7 +242,7 @@ public class ConsoleDisplay {
             if (!option.requiresAdmin())
                 System.out.println(option.getId() + ". " + option.getMessage());
             else {
-                if (adminUser) {
+                if (userIsAdmin) {
                     System.out.println(option.getId() + ". " + option.getMessage());
                 }
             }
@@ -243,7 +268,7 @@ public class ConsoleDisplay {
         String login = InputManager.getStringInput().orElse("guest");
         if (login.equals("admin")) {
             System.out.println(LOGGED_EMPLOYEE.getMessage());
-            adminUser = true;
+            userIsAdmin = true;
         } else {
             System.out.println(LOGGED_CLIENT.getMessage());
         }
