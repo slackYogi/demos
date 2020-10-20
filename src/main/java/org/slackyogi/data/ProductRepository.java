@@ -4,19 +4,13 @@ import org.slackyogi.model.Drink;
 import org.slackyogi.model.Food;
 import org.slackyogi.model.Product;
 
-import java.util.Optional;
-import java.util.TreeSet;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class ProductRepository {
 
     private static TreeSet<Product> products = new TreeSet<>(); // TODO move database out of memory
-
-    public TreeSet<Product> getProducts() {             //TODO do not allow access to products
-        return products;
-    }
 
     public ProductRepository() {
         products = fetchDataFromFakeDB();
@@ -28,8 +22,7 @@ public class ProductRepository {
     }
 
     public Optional<Product> findByName(String name) {
-        for (Product product : getProducts()) {
-
+        for (Product product : findAll()) {
             if (product.getName().equals(name)) {
                 return Optional.of(product);
             }
@@ -37,15 +30,24 @@ public class ProductRepository {
         return Optional.empty();
     }
 
-    public Iterable<Product> findAll() {
-        return getProducts();
+    public SortedSet<Product> findAll() {
+        return Collections.unmodifiableSortedSet(products);
     }
 
     public Long count() {
-        return Long.valueOf(1);                                     // TODO implement this
+        return Long.valueOf(findAll().size());
     }
 
     public void delete(Product product) {
+        if (product != null) {
+            if(findByName(product.getName()).isPresent())
+            {
+                products.remove(product);
+            }
+        }
+    }
+
+    public void update(Product product) {
         // TODO implement this
     }
 

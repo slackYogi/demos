@@ -7,7 +7,6 @@ import org.slackyogi.view.enums.MainMenuOption;
 
 import java.util.Map;
 import java.util.Optional;
-
 import static org.slackyogi.view.enums.Message.*;
 
 public class ConsoleDisplay {
@@ -44,6 +43,12 @@ public class ConsoleDisplay {
             case VIEW_LIST_OF_ALL_PRODUCTS:
                 viewListOfAllProducts();
                 break;
+            case PRODUCT_EXISTS_IN_STORE:
+                System.out.println(TYPE_SEARCHED_PRODUCT_NAME.getMessage());
+                System.out.println((isProductAvailable())
+                        ? SEARCHED_PRODUCT_IS_AVAILABLE.getMessage()
+                        : SEARCHED_PRODUCT_IS_NOT_AVAILABLE.getMessage());
+                break;
             case ADD_PRODUCT_TO_BASKET:
                 addProductToBasket();
                 break;
@@ -58,18 +63,15 @@ public class ConsoleDisplay {
                     addProductToStore();
                 }
                 break;
-            case FIND_PRODUCT_IN_STORE:
-                if (adminUser) {
-                    System.out.println(3);
-                }
-                break;
             case EDIT_PRODUCT_IN_STORE:
                 if (adminUser) {
+                    //TODO
                     System.out.println(2);
                 }
                 break;
             case REMOVE_PRODUCT_FROM_STORE:
                 if (adminUser) {
+                    //TODO
                     System.out.println(1);
                 }
                 break;
@@ -83,6 +85,10 @@ public class ConsoleDisplay {
             default:
                 break;
         }
+    }
+
+    private static boolean isProductAvailable() {
+        return productRepository.findByName(InputManager.getStringInput().orElse("")).isPresent();
     }
 
     private static void addProductToStore() {
