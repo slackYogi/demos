@@ -1,9 +1,10 @@
 package org.slackyogi.model;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
-public abstract class Product implements Comparable<Product> {
+public abstract class Product implements Comparable<Product>, Serializable {
     UUID id;
     String name;
     double price;

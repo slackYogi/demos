@@ -4,16 +4,20 @@ import org.slackyogi.model.Drink;
 import org.slackyogi.model.Food;
 import org.slackyogi.model.Product;
 
+import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class ProductRepository {
+public class ProductRepository implements Serializable {
 
     private static TreeSet<Product> products = new TreeSet<>(); // TODO move database out of memory
+    private FileManager fileManager;
 
     public ProductRepository() {
-        products = fetchDataFromFakeDB();
+        fileManager = new FileManager();
+            products = fileManager.importData()
+                    .orElse(new TreeSet<>());
     }
 
     public void addProduct(Product product) {
@@ -51,6 +55,14 @@ public class ProductRepository {
         if (newProduct != null && products.contains(oldProduct)) {
             products.remove(oldProduct);
             products.add(newProduct);
+        }
+    }
+
+    public void saveDatabase() {
+        try {
+            fileManager.exportData(products);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 

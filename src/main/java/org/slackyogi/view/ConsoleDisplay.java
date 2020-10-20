@@ -99,8 +99,7 @@ public class ConsoleDisplay {
                 start();
                 break;
             case EXIT:
-                isWorking = false;
-                InputManager.close();
+                onExit();
                 break;
             default:
                 break;
@@ -273,5 +272,11 @@ public class ConsoleDisplay {
             System.out.println(LOGGED_CLIENT);
         }
         System.out.println(WELCOMING + login + "!");
+    }
+
+    private static void onExit() {
+        productRepository.saveDatabase();
+        isWorking = false;
+        InputManager.close();
     }
 }
