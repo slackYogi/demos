@@ -5,7 +5,7 @@ import java.util.Optional;
 public enum MainMenuOptions {
     VIEW_LIST_OF_ALL_PRODUCTS(1, "View list of all products."),
     ADD_PRODUCT_TO_BASKET(2, "Add product to basket."),
-    SHOW_BASKET(3, "Show items in basked."),
+    VIEW_BASKET(3, "Show items in basked."),
     EXIT(0, "Quit");
 
     private int id;

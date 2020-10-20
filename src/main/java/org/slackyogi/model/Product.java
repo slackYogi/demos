@@ -8,6 +8,11 @@ public abstract class Product implements Comparable<Product> {
     String name;
     double price;
 
+
+    public String getName() {
+        return name;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -31,10 +36,7 @@ public abstract class Product implements Comparable<Product> {
 
     @Override
     public String toString() {
-        return "Product{" +
-                "name='" + name + '\'' +
-                ", price=" + price +
-                '}';
+        return name + "\t\t" + price;
     }
 
     @Override

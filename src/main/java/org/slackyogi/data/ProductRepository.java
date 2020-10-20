@@ -4,6 +4,7 @@ import org.slackyogi.model.Drink;
 import org.slackyogi.model.Food;
 import org.slackyogi.model.Product;
 
+import java.util.Optional;
 import java.util.TreeSet;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -25,8 +26,14 @@ public class ProductRepository {
         // products.add(product);                               // TODO implement this
     }
 
-    public Product findByName(String name) {
-        return new Food("aaa", 0, 0);                            // TODO implement this
+    public Optional<Product> findByName(String name) {
+        for (Product product: getProducts()) {
+
+            if (product.getName().equals(name)) {
+                return Optional.of(product);
+            }
+        }
+        return Optional.empty();
     }
 
     public Iterable<Product> findAll() {
