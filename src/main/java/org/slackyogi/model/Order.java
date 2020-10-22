@@ -1,38 +1,51 @@
 package org.slackyogi.model;
 
-import java.util.Map;
-import java.util.TreeMap;
+import org.slackyogi.view.enums.Message;
+
+import java.util.HashSet;
 
 public class Order {
-    private static Map<Product, Integer> orderItems;
+    private static HashSet<OrderItem> orderItems;
 
     public Order() {
-        orderItems = new TreeMap<>();
+        orderItems = new HashSet<>();
     }
 
-    public void addItem(Product product, int quantity) {
-        if (orderItems.containsKey(product)) {
-            increaseQuantityOfExistingItem(product, quantity);
-        } else {
-            orderItems.put(product, quantity);
+    public void addItem(OrderItem orderItem) {
+        if (!orderItems.add(orderItem)) {
+            increaseQuantityOfExistingItem(orderItem);
         }
     }
 
-    public void removeItem(Product product, int quantity) {
-        if (orderItems.containsKey(product)) {
-            if (orderItems.get(product) - quantity > 0) {
-                orderItems.put(product, orderItems.get(product) - quantity);
-            } else {
-                orderItems.remove(product);
-            }
-        }
+    public void removeItem(OrderItem orderItemForRemoval) {
+        orderItems.stream()
+                .filter(orderItem -> orderItem.getProductsName().equals(orderItemForRemoval.getProductsName()))
+                .findFirst()
+                .ifPresentOrElse(orderItem -> {
+                            if (productQuantityTooLow(orderItem, orderItemForRemoval)) {
+                                orderItems.remove(orderItem);
+                            } else {
+                                orderItem.setQuantity(orderItem.getQuantity() - orderItemForRemoval.getQuantity());
+                            }
+                        },
+                        () -> System.err.println(Message.ERROR_NO_SUCH_PRODUCT_IN_ORDER));
     }
 
-    public Map<Product, Integer> getItemsInBasket() {
+    public HashSet<OrderItem> getOrderItems() {
         return orderItems;
     }
 
-    private static void increaseQuantityOfExistingItem(Product product, int quantity) {
-        orderItems.put(product, orderItems.get(product) + quantity);
+    private static void increaseQuantityOfExistingItem(OrderItem modifyingOrderItem) {
+        orderItems.stream()
+                .filter(orderItem -> orderItem.getProductsName().equals(modifyingOrderItem.getProductsName()))
+                .findFirst()
+                .ifPresentOrElse(orderItem -> orderItem.setQuantity(orderItem.getQuantity() + modifyingOrderItem.getQuantity()),
+                        () -> System.err.println(Message.ERROR_NO_SUCH_PRODUCT_IN_ORDER));
+
+    }
+
+    private static boolean productQuantityTooLow(OrderItem toModify, OrderItem modifying) {
+        return modifying.getQuantity() >= toModify.getQuantity();
     }
 }
+

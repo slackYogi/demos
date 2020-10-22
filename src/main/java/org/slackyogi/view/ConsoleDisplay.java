@@ -4,9 +4,8 @@ import org.slackyogi.data.ProductRepository;
 import org.slackyogi.model.*;
 import org.slackyogi.model.enums.ProductType;
 import org.slackyogi.view.enums.MenuOption;
-
+import java.util.HashSet;
 import java.util.InputMismatchException;
-import java.util.Map;
 import java.util.Optional;
 
 import static org.slackyogi.view.enums.Message.*;
@@ -43,7 +42,7 @@ public class ConsoleDisplay {
     private static void actOnUsersChoice(MenuOption option) { //TODO Instead of switch create abstract class Page and Pages for each switch case?
         switch (option) {
             case VIEW_LIST_OF_ALL_PRODUCTS:
-                viewListOfAllProducts();
+                viewListOfProductsInStore();
                 break;
             case PRODUCT_EXISTS_IN_STORE:
                 System.out.println(ENTER_SEARCHED_PRODUCT_NAME);
@@ -55,7 +54,7 @@ public class ConsoleDisplay {
                 addProductToOrder();
                 break;
             case VIEW_ORDER:
-                viewOrderItems(order.getItemsInBasket());
+                viewOrderItems(order.getOrderItems());
                 break;
             case REMOVE_ITEM_FROM_ORDER:
                 removeItemFromOrder();
@@ -70,28 +69,30 @@ public class ConsoleDisplay {
                     System.out.println(ENTER_PRODUCT_NAME_TO_BE_UPDATED);
                     Optional<Product> productToBeModified = getProductByName();
                     if (productToBeModified.isPresent()) {
-                        if (productToBeModified.get() instanceof Food) {
-                            Optional<Food> food = getFoodDataFromUser();
-                            if (food.isPresent()) {
-                                Product newProduct = food.get();
-                                productRepository.update(productToBeModified.get(), newProduct);
-                            }
-                        } else if (productToBeModified.get() instanceof Drink) {
-                            Optional<Drink> drink = getDrinkDataFromUser();                                 //TODO eliminate this repetition
-                            if (drink.isPresent()) {
-                                Product newProduct = drink.get();
-                                productRepository.update(productToBeModified.get(), newProduct);
-                            }
-                        } else {
-                            System.err.println(ERROR_NO_SUCH_PRODUCT_AVAILABLE);
+                        switch (productToBeModified.get().getType()) {
+                            case FOOD:
+                                Optional<Food> food = InputManager.DataWrapper.createFoodFromInput();
+                                if (food.isPresent()) {
+                                    Product newProduct = food.get();
+                                    productRepository.update(productToBeModified.get(), newProduct);
+                                }
+                                break;
+                            case DRINK:
+                                Optional<Drink> drink = InputManager.DataWrapper.createDrinkFromInput();
+                                if (drink.isPresent()) {
+                                    Product newProduct = drink.get();
+                                    productRepository.update(productToBeModified.get(), newProduct);
+                                }
+                                break;
                         }
+                    } else {
+                        System.err.println(ERROR_NO_SUCH_PRODUCT_AVAILABLE);
                     }
                 }
                 break;
             case REMOVE_PRODUCT_FROM_STORE:
                 if (userIsAdmin) {
-                    System.out.println(ENTER_PRODUCT_NAME_FOR_DELETION);
-                    tryToDeleteProduct(productRepository.findByName(InputManager.getStringInput().orElse("")));
+                    tryToDeleteProduct();
                 }
                 break;
             case RELOG:
@@ -106,12 +107,11 @@ public class ConsoleDisplay {
         }
     }
 
-    private static void tryToDeleteProduct(Optional<Product> productToBeDeleted) {
-        if (productToBeDeleted.isPresent()) {
-            productRepository.delete(productToBeDeleted.get());
-        } else {
-            System.out.println(ERROR_NO_SUCH_PRODUCT_AVAILABLE);
-        }
+    private static void tryToDeleteProduct() {
+        System.out.println(ENTER_PRODUCT_NAME_FOR_DELETION);
+        getProductByName()
+                .ifPresentOrElse(product -> productRepository.delete(product),
+                        () -> System.out.println(ERROR_NO_SUCH_PRODUCT_AVAILABLE));
     }
 
     private static boolean isProductAvailable() {
@@ -120,64 +120,27 @@ public class ConsoleDisplay {
 
     private static void addProductToStore() {
         viewTypesForNewProducts();
-        System.out.println(CREATING_PRODUCT_OF_A_TYPE);
+        System.out.println(ENTER_TYPE_OF_PRODUCT_YOU_WANT_TO_CREATE);
 
-        Optional<ProductType> optionalType = ProductType
+        Optional<ProductType> productType = ProductType
                 .fromString(InputManager.getStringInput()
                         .orElse(""));
 
-        if (optionalType.isPresent()) {
-            switch (optionalType.get()) {
+        if (productType.isPresent()) {
+            switch (productType.get()) {
                 case FOOD:
-                    Optional<Food> foodProduct = getFoodDataFromUser();
-                    if (foodProduct.isPresent()) {
-                        productRepository.addProduct(foodProduct.get());
-                    } else {
-                        System.err.println(ERROR_WRONG_INPUT_PRODUCT_CREATION);
-                    }
+                    InputManager.DataWrapper.createFoodFromInput().ifPresentOrElse(product -> productRepository.addProduct(product),
+                            () -> System.err.println(ERROR_WRONG_INPUT_PRODUCT_CREATION));
                     break;
                 case DRINK:
-                    Optional<Drink> drinkProduct = getDrinkDataFromUser();
-                    if (drinkProduct.isPresent()) {
-                        productRepository.addProduct(drinkProduct.get());
-                    } else {
-                        System.err.println(ERROR_WRONG_INPUT_PRODUCT_CREATION);
-                    }
+                    InputManager.DataWrapper.createDrinkFromInput().ifPresentOrElse(product -> productRepository.addProduct(product),
+                            () -> System.err.println(ERROR_WRONG_INPUT_PRODUCT_CREATION));
                     break;
                 default:
+                    System.err.println(ERROR_WRONG_PRODUCT_TYPE);
                     break;
             }
         }
-    }
-
-    private static Optional<Food> getFoodDataFromUser() {       //TODO some generic method?
-        System.out.println(CREATING_PRODUCT_NAME); //TODO change entering values as one string?
-        String name = InputManager.getStringInput().orElse("");
-
-        System.out.println(CREATING_PRODUCT_PRICE);
-        double price = InputManager.getDoubleInput();
-
-        System.out.println(CREATING_FOOD_MASS);
-        double mass = InputManager.getDoubleInput();
-
-        if (!name.isBlank() && price > 0 && mass > 0)
-            return Optional.of(new Food(name, price, mass));
-        return Optional.empty();
-    }
-
-    private static Optional<Drink> getDrinkDataFromUser() {
-        System.out.println(CREATING_PRODUCT_NAME);
-        String name = InputManager.getStringInput().orElse("");
-
-        System.out.println(CREATING_PRODUCT_PRICE);
-        double price = InputManager.getDoubleInput();
-
-        System.out.println(CREATING_DRINK_CAPACITY);
-        double capacity = InputManager.getDoubleInput();
-
-        if (!name.isBlank() && price > 0 && capacity > 0)
-            return Optional.of(new Drink(name, price, capacity));
-        return Optional.empty();
     }
 
     private static void viewTypesForNewProducts() {
@@ -187,52 +150,24 @@ public class ConsoleDisplay {
         }
     }
 
-    private static void removeItemFromOrder() {
-        OrderItem orderItem = getOrderItemData();            //TODO try to remove model information from view
-        if (orderItemHasCorrectData(orderItem)) {
-            productRepository.findByName(orderItem.getName())
-                    .ifPresentOrElse(product -> order.removeItem(product, orderItem.getQuantity()),
-                            () -> System.err.println(ERROR_NO_SUCH_ITEM_IN_STORE + orderItem.getName()));
-
-            System.out.println("Removed " + orderItem.getQuantity() + " " + orderItem.getName() + " from order."); //TODO Give proper information if some items remained in basker
-        }
-    }
-
     private static void addProductToOrder() {
-        OrderItem orderItem = getOrderItemData();
-        if (orderItemHasCorrectData(orderItem)) {
-            productRepository.findByName(orderItem.getName())
-                    .ifPresentOrElse(product -> order.addItem(product, orderItem.getQuantity()),
-                            () -> System.err.println(ERROR_NO_SUCH_ITEM_IN_STORE + orderItem.getName()));
-            //TODO check if there is enough quantity of product
-            System.out.println("Added " + orderItem.getQuantity() + " " + orderItem.getName() + " to order."); //TODO add 's' for plural items
-        }
+        InputManager.DataWrapper.createOrderItemFromInput()
+                .ifPresentOrElse(orderItem -> order.addItem(orderItem),
+                        () -> System.err.println(ERROR_NO_SUCH_PRODUCT_AVAILABLE));
+
+        //TODO check if there is enough quantity of product in store
     }
 
-    private static boolean orderItemHasCorrectData(OrderItem orderItem) {
-        if (orderItem.getName().trim().isBlank()) {
-            System.err.println(ERROR_MODIFYING_ORDER_WRONG_NAME);
-            return false;
-        } else if (orderItem.getQuantity() <= 0) {
-            System.err.println(ERROR_ADDING_TO_ORDER_WRONG_QUANTITY);
-            return false;
-        } else {
-            return true;
-        }
+    private static void removeItemFromOrder() {
+        InputManager.DataWrapper.createOrderItemFromInput()
+                .ifPresentOrElse(orderItem -> order.removeItem(orderItem),
+                        () -> System.err.println(ERROR_NO_SUCH_PRODUCT_AVAILABLE));
+
+        // TODO Give proper information if some items remained in basket
     }
 
     private static Optional<Product> getProductByName() {
         return productRepository.findByName(InputManager.getStringInput().orElse(""));
-    }
-
-    private static OrderItem getOrderItemData() {
-        System.out.println(ADDING_TO_ORDER_PRODUCT_NAME);
-        String name = InputManager.getStringInput().orElse("");
-
-        System.out.println(ADDING_TO_ORDER_PRODUCT_QUANTITY);
-        int quantity = InputManager.getIntInput();
-
-        return new OrderItem(name, quantity);
     }
 
     private static void printMenu() {
@@ -248,18 +183,14 @@ public class ConsoleDisplay {
         }
     }
 
-    private static void viewListOfAllProducts() {
+    private static void viewListOfProductsInStore() {
         System.out.println(COLUMNS_OF_PRODUCTS_LISTING);
-        for (Product product : productRepository.findAll()) {
-            System.out.println(product);                                    //TODO add method for matching column elements
-        }
-
+        productRepository.findAll().forEach(System.out::println);
+                                    //TODO add method for matching column elements
     }
 
-    private static void viewOrderItems(Map<Product, Integer> orderItems) {
-        for (Product product : orderItems.keySet()) {
-            System.out.println("Item: " + product.getName() + " in " + orderItems.get(product) + " quantity.");
-        }
+    private static void viewOrderItems(HashSet<OrderItem> orderItems) {
+        orderItems.forEach(System.out::println);
     }
 
     private static void loggingIn() {

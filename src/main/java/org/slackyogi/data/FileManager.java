@@ -7,7 +7,7 @@ import java.util.TreeSet;
 public class FileManager {
     private static final String FILE_NAME = "file_database.dat";
 
-    public void exportData(TreeSet<Product> treeSet) { //TODO some other type to encapsulate model?
+    public void exportData(TreeSet<Product> treeSet) {
         try (ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(FILE_NAME)))
         {
             stream.writeObject(treeSet);
