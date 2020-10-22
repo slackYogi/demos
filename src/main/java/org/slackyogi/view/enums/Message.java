@@ -24,7 +24,11 @@ public enum Message {
     ERROR_ENTER_NUMBER_FROM_RANGE("Please enter a number from range of available options."),
     ERROR_NO_SUCH_PRODUCT_AVAILABLE("No such product is available in store."),
     ERROR_NO_SUCH_PRODUCT_IN_ORDER("No such product in order."),
-    ERROR_WRONG_PRODUCT_TYPE("Store does not have product of such type.");
+    ERROR_WRONG_PRODUCT_TYPE("Store does not have product of such type."),
+    ERROR_FILE_NOT_FOUND("Have not found file: "),
+    ERROR_WRITING_TO_A_FILE("Error writing to a file: "),
+    ERROR_READING_FROM_A_FILE("Error reading from a file: "),
+    ERROR_DESERIALIZING_DATA_TO_A_CLASS("Could not deserialize data to a class.");
 
     private final String message;
 

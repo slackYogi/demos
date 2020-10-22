@@ -2,6 +2,7 @@ package org.slackyogi.data;
 
 import org.slackyogi.model.Product;
 
+import java.io.IOException;
 import java.io.Serializable;
 import java.util.*;
 
@@ -12,8 +13,12 @@ public class ProductRepository implements Serializable {
 
     public ProductRepository() {
         fileManager = new FileManager();
+        try {
             products = fileManager.importData()
                     .orElse(new TreeSet<>());
+        } catch (IOException | ClassNotFoundException ex) {
+            System.err.println(ex.getMessage());
+        }
     }
 
     public void addProduct(Product product) {
@@ -57,8 +62,8 @@ public class ProductRepository implements Serializable {
     public void saveDatabase() {
         try {
             fileManager.exportData(products);
-        } catch (Exception e) {
-            e.printStackTrace();
+        } catch (IOException ex) {
+            System.err.println(ex.getMessage());
         }
     }
 }

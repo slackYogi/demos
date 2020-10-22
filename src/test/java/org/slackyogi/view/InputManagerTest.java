@@ -5,6 +5,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.util.InputMismatchException;
 
 class InputManagerTest {
 
@@ -22,13 +23,13 @@ class InputManagerTest {
 
     @DisplayName("getIntInput() Scanner didn't receive an int number and throws IllegalArgumentException")
     @Test
-    public void getIntInput_ScannerReceivedNotInt_ThrowsIllegalArgumentException() {
+    public void getIntInput_ScannerReceivedNotInt_ThrowsInputMismatchException() {
         String testInput = "abc";
         InputStream in = new ByteArrayInputStream(testInput.getBytes());
         System.setIn(in);
 
         Assertions.assertThatThrownBy(InputManager::getIntInput)
-                .isInstanceOf(IllegalArgumentException.class);
+                .isInstanceOf(InputMismatchException.class);
     }
 
 }
