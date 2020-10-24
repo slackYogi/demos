@@ -4,10 +4,9 @@ import org.slackyogi.model.enums.ProductType;
 
 import java.io.Serializable;
 import java.util.Objects;
-import java.util.UUID;
 
 public abstract class Product implements Comparable<Product>, Serializable {
-    UUID id;
+    int id;
     String name;
     double price;
     ProductType type;
@@ -29,8 +28,18 @@ public abstract class Product implements Comparable<Product>, Serializable {
         return Objects.hash(id, name);
     }
 
+    public Product (ProductType productType) {
+        this.type = productType;
+    }
+
     public Product(String name, double price, ProductType type) {
-        this.id = UUID.randomUUID();
+        this.name = name;
+        this.price = price;
+        this.type = type;
+    }
+
+    public Product(int id, String name, double price, ProductType type) {
+        this.id = id;
         this.name = name;
         this.price = price;
         this.type = type;
@@ -48,5 +57,21 @@ public abstract class Product implements Comparable<Product>, Serializable {
 
     public ProductType getType() {
         return type;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPrice(double price) {
+        this.price = price;
     }
 }

@@ -4,9 +4,9 @@ import java.util.Optional;
 
 public enum MenuOption {
     VIEW_LIST_OF_ALL_PRODUCTS(1, "View list of all products.", false),
-    PRODUCT_EXISTS_IN_STORE(2, "To check if product is in the store.", false),
+    CHECK_IF_PRODUCT_EXISTS_IN_STORE(2, "To check if product is in the store.", false),
     ADD_PRODUCT_TO_ORDER(3, "Add product to order.", false),
-    VIEW_ORDER(4, "Show items in order.", false),
+    VIEW_ORDER_ITEMS(4, "Show items in order.", false),
     REMOVE_ITEM_FROM_ORDER(5, "Remove item from order.", false),
     ADD_PRODUCT_TO_STORE(6, "Add product to store.", true),
     EDIT_PRODUCT_IN_STORE(7, "Edit products data in store.", true),

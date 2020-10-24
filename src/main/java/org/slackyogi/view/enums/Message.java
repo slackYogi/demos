@@ -28,7 +28,8 @@ public enum Message {
     ERROR_FILE_NOT_FOUND("Have not found file: "),
     ERROR_WRITING_TO_A_FILE("Error writing to a file: "),
     ERROR_READING_FROM_A_FILE("Error reading from a file: "),
-    ERROR_DESERIALIZING_DATA_TO_A_CLASS("Could not deserialize data to a class.");
+    ERROR_DESERIALIZING_DATA_TO_A_CLASS("Could not deserialize data to a class."),
+    ERROR_CONNECTING_OR_CREATING_DATABASE("Error connecting to database or creating new one.");
 
     private final String message;
 

@@ -1,9 +1,11 @@
 package org.slackyogi.view;
 
+import org.slackyogi.data.DatabaseManager;
 import org.slackyogi.data.ProductRepository;
 import org.slackyogi.model.*;
 import org.slackyogi.model.enums.ProductType;
 import org.slackyogi.view.enums.MenuOption;
+
 import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.Optional;
@@ -12,9 +14,9 @@ import static org.slackyogi.view.enums.Message.*;
 
 public class ConsoleDisplay {
     private static boolean isWorking;
-    private static ProductRepository productRepository = new ProductRepository();
     private static Order order = new Order();
     private static boolean userIsAdmin;
+    private static ProductRepository productRepository = new ProductRepository(new DatabaseManager());
 
     public static void start() {
         isWorking = true;
@@ -44,7 +46,7 @@ public class ConsoleDisplay {
             case VIEW_LIST_OF_ALL_PRODUCTS:
                 viewListOfProductsInStore();
                 break;
-            case PRODUCT_EXISTS_IN_STORE:
+            case CHECK_IF_PRODUCT_EXISTS_IN_STORE:
                 System.out.println(ENTER_SEARCHED_PRODUCT_NAME);
                 System.out.println((isProductAvailable())
                         ? SEARCHED_PRODUCT_IS_AVAILABLE
@@ -53,7 +55,7 @@ public class ConsoleDisplay {
             case ADD_PRODUCT_TO_ORDER:
                 addProductToOrder();
                 break;
-            case VIEW_ORDER:
+            case VIEW_ORDER_ITEMS:
                 viewOrderItems(order.getOrderItems());
                 break;
             case REMOVE_ITEM_FROM_ORDER:
@@ -68,8 +70,10 @@ public class ConsoleDisplay {
                 if (userIsAdmin) {
                     System.out.println(ENTER_PRODUCT_NAME_TO_BE_UPDATED);
                     Optional<Product> productToBeModified = getProductByName();
+
                     if (productToBeModified.isPresent()) {
                         switch (productToBeModified.get().getType()) {
+
                             case FOOD:
                                 Optional<Food> food = InputManager.DataWrapper.createFoodFromInput();
                                 if (food.isPresent()) {
@@ -77,6 +81,7 @@ public class ConsoleDisplay {
                                     productRepository.update(productToBeModified.get(), newProduct);
                                 }
                                 break;
+
                             case DRINK:
                                 Optional<Drink> drink = InputManager.DataWrapper.createDrinkFromInput();
                                 if (drink.isPresent()) {
@@ -186,7 +191,7 @@ public class ConsoleDisplay {
     private static void viewListOfProductsInStore() {
         System.out.println(COLUMNS_OF_PRODUCTS_LISTING);
         productRepository.findAll().forEach(System.out::println);
-                                    //TODO add method for matching column elements
+        //TODO add method for matching column elements
     }
 
     private static void viewOrderItems(HashSet<OrderItem> orderItems) {
@@ -207,6 +212,7 @@ public class ConsoleDisplay {
 
     private static void onExit() {
         productRepository.saveDatabase();
+        productRepository.close();
         isWorking = false;
         InputManager.close();
     }

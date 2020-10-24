@@ -2,23 +2,33 @@ package org.slackyogi.data;
 
 import org.slackyogi.model.Product;
 
-import java.io.IOException;
 import java.io.Serializable;
-import java.util.*;
+import java.util.Collections;
+import java.util.Optional;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 public class ProductRepository implements Serializable {
 
     private static TreeSet<Product> products = new TreeSet<>();
-    private FileManager fileManager;
+    private DatabaseManager databaseManager;
 
-    public ProductRepository() {
-        fileManager = new FileManager();
-        try {
-            products = fileManager.importData()
-                    .orElse(new TreeSet<>());
-        } catch (IOException | ClassNotFoundException ex) {
-            System.err.println(ex.getMessage());
-        }
+    public ProductRepository(DatabaseManager databaseManager) {
+        this.databaseManager = databaseManager;
+        databaseManager.open();
+        databaseManager.populateDB();
+
+        products = databaseManager.queryProducts();
+
+        //TODO import products in store
+//        try {
+//            products = dataManager.importData()
+//                    .orElse(new TreeSet<>());
+//        } catch (IOException ex) {
+//            ex.getMessage();
+//        } catch (ClassNotFoundException ex) {
+//            ex.getMessage();
+//        }
     }
 
     public void addProduct(Product product) {
@@ -59,11 +69,7 @@ public class ProductRepository implements Serializable {
         }
     }
 
-    public void saveDatabase() {
-        try {
-            fileManager.exportData(products);
-        } catch (IOException ex) {
-            System.err.println(ex.getMessage());
-        }
+    public void close() {
+        databaseManager.close();
     }
 }
