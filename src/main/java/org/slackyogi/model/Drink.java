@@ -31,5 +31,7 @@ public class Drink extends Product {
         this.capacity = capacity;
     }
 
-
+    public double getCapacity() {
+        return capacity;
+    }
 }

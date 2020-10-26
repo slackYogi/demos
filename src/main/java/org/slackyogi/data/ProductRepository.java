@@ -1,11 +1,12 @@
 package org.slackyogi.data;
 
+import org.slackyogi.model.Drink;
+import org.slackyogi.model.Food;
 import org.slackyogi.model.Product;
 
 import java.io.Serializable;
-import java.util.Collections;
+import java.sql.SQLException;
 import java.util.Optional;
-import java.util.SortedSet;
 import java.util.TreeSet;
 
 public class ProductRepository implements Serializable {
@@ -17,55 +18,96 @@ public class ProductRepository implements Serializable {
         this.databaseManager = databaseManager;
         databaseManager.open();
         databaseManager.populateDB();
-
-        products = databaseManager.queryProducts();
-
-        //TODO import products in store
-//        try {
-//            products = dataManager.importData()
-//                    .orElse(new TreeSet<>());
-//        } catch (IOException ex) {
-//            ex.getMessage();
-//        } catch (ClassNotFoundException ex) {
-//            ex.getMessage();
-//        }
+        databaseManager.queryProducts().ifPresent(prod -> products = prod);
     }
 
-    public void addProduct(Product product) {
-        if (product != null)
-            products.add(product);
+    public void addProduct(Product product) throws SQLException {
+        switch (product.getType()) {
+            case FOOD:
+                Food food = (Food) product;
+                databaseManager.insertFood(food.getName(), food.getPrice(), food.getMass());
+                break;
+            case DRINK:
+                Drink drink = (Drink) product;
+                databaseManager.insertDrink(drink.getName(), drink.getPrice(), drink.getCapacity());
+                break;
+            default:
+                break;
+        }
     }
 
     public Optional<Product> findByName(String name) {
-        for (Product product : findAll()) {
-            if (product.getName().equals(name)) {
-                return Optional.of(product);
-            }
+        Optional<Food> food = databaseManager.queryFoodsByName(name);
+        Optional<Drink> drink = databaseManager.queryDrinksByName(name);
+        if (food.isPresent()) {
+            return Optional.of(food.get());
+        } else if (drink.isPresent()) {
+            return Optional.of(drink.get());
+        } else {
+            System.out.println();
+            return Optional.empty();
         }
-        return Optional.empty();
     }
 
-    public SortedSet<Product> findAll() {
-        return Collections.unmodifiableSortedSet(products);
+    public Optional<TreeSet<Product>> findAll() {
+        return databaseManager.queryProducts();
     }
 
-    public Long count() {
-        return Long.valueOf(findAll().size());
+    public int count() {
+        Optional<TreeSet<Product>> products = findAll();
+        if (products.isPresent()) {
+            return products.get().size();
+        } else {
+            return 0;
+        }
     }
 
     public void delete(Product product) {
         if (product != null) {
-            if(findByName(product.getName()).isPresent())
-            {
-                products.remove(product);
+           if (product instanceof Food)
+               delete((Food)product);
+           if (product instanceof Drink)
+               delete((Drink)product);
+        }
+    }
+
+    public void delete(Food food) {
+        if (findByName(food.getName()).isPresent()) {
+            try {
+                databaseManager.deleteFood(food.getName());
+            } catch (SQLException ex) {
+                ex.printStackTrace();
             }
         }
     }
 
-    public void update(Product oldProduct, Product newProduct) {
-        if (newProduct != null && products.contains(oldProduct)) {
-            products.remove(oldProduct);
-            products.add(newProduct);
+    public void delete(Drink drink) {
+        if (findByName(drink.getName()).isPresent()) {
+            try {
+                databaseManager.deleteDrink(drink.getName());
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public void update(String oldFoodName, Food newFood) {
+        if (newFood != null) {
+            try {
+                databaseManager.updateFood(oldFoodName, newFood);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
+    }
+
+    public void update(String oldDrinkName, Drink newDrink) {
+        if (newDrink != null) {
+            try {
+                databaseManager.updateDrink(oldDrinkName, newDrink);
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
         }
     }
 

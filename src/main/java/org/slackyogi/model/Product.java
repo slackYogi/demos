@@ -63,6 +63,10 @@ public abstract class Product implements Comparable<Product>, Serializable {
         return id;
     }
 
+    public double getPrice() {
+        return price;
+    }
+
     public void setId(int id) {
         this.id = id;
     }

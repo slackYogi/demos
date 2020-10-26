@@ -6,6 +6,7 @@ import org.slackyogi.model.*;
 import org.slackyogi.model.enums.ProductType;
 import org.slackyogi.view.enums.MenuOption;
 
+import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.InputMismatchException;
 import java.util.Optional;
@@ -45,6 +46,7 @@ public class ConsoleDisplay {
         switch (option) {
             case VIEW_LIST_OF_ALL_PRODUCTS:
                 viewListOfProductsInStore();
+                System.out.println("Store has " + productRepository.count() + " products.");
                 break;
             case CHECK_IF_PRODUCT_EXISTS_IN_STORE:
                 System.out.println(ENTER_SEARCHED_PRODUCT_NAME);
@@ -77,16 +79,16 @@ public class ConsoleDisplay {
                             case FOOD:
                                 Optional<Food> food = InputManager.DataWrapper.createFoodFromInput();
                                 if (food.isPresent()) {
-                                    Product newProduct = food.get();
-                                    productRepository.update(productToBeModified.get(), newProduct);
+                                    Food newFood = food.get();
+                                    productRepository.update(productToBeModified.get().getName(), newFood);
                                 }
                                 break;
 
                             case DRINK:
                                 Optional<Drink> drink = InputManager.DataWrapper.createDrinkFromInput();
                                 if (drink.isPresent()) {
-                                    Product newProduct = drink.get();
-                                    productRepository.update(productToBeModified.get(), newProduct);
+                                    Drink newDrink = drink.get();
+                                    productRepository.update(productToBeModified.get().getName(), newDrink);
                                 }
                                 break;
                         }
@@ -97,7 +99,7 @@ public class ConsoleDisplay {
                 break;
             case REMOVE_PRODUCT_FROM_STORE:
                 if (userIsAdmin) {
-                    tryToDeleteProduct();
+                     tryToDeleteProduct();
                 }
                 break;
             case RELOG:
@@ -112,7 +114,7 @@ public class ConsoleDisplay {
         }
     }
 
-    private static void tryToDeleteProduct() {
+        private static void tryToDeleteProduct() {
         System.out.println(ENTER_PRODUCT_NAME_FOR_DELETION);
         getProductByName()
                 .ifPresentOrElse(product -> productRepository.delete(product),
@@ -134,12 +136,26 @@ public class ConsoleDisplay {
         if (productType.isPresent()) {
             switch (productType.get()) {
                 case FOOD:
-                    InputManager.DataWrapper.createFoodFromInput().ifPresentOrElse(product -> productRepository.addProduct(product),
-                            () -> System.err.println(ERROR_WRONG_INPUT_PRODUCT_CREATION));
+                    InputManager.DataWrapper.createFoodFromInput()
+                            .ifPresentOrElse(product -> {
+                                        try {
+                                            productRepository.addProduct(product);
+                                        } catch (SQLException ex) {
+                                            System.err.println(ex.getMessage());
+                                        }
+                                    },
+                                    () -> System.err.println(ERROR_WRONG_INPUT_PRODUCT_CREATION));
                     break;
                 case DRINK:
-                    InputManager.DataWrapper.createDrinkFromInput().ifPresentOrElse(product -> productRepository.addProduct(product),
-                            () -> System.err.println(ERROR_WRONG_INPUT_PRODUCT_CREATION));
+                    InputManager.DataWrapper.createDrinkFromInput()
+                            .ifPresentOrElse(product -> {
+                                        try {
+                                            productRepository.addProduct(product);
+                                        } catch (SQLException ex) {
+                                            System.err.println(ex.getMessage());
+                                        }
+                                    },
+                                    () -> System.err.println(ERROR_WRONG_INPUT_PRODUCT_CREATION));
                     break;
                 default:
                     System.err.println(ERROR_WRONG_PRODUCT_TYPE);
@@ -172,7 +188,7 @@ public class ConsoleDisplay {
     }
 
     private static Optional<Product> getProductByName() {
-        return productRepository.findByName(InputManager.getStringInput().orElse(""));
+         return productRepository.findByName(InputManager.getStringInput().orElse(""));
     }
 
     private static void printMenu() {
@@ -190,7 +206,8 @@ public class ConsoleDisplay {
 
     private static void viewListOfProductsInStore() {
         System.out.println(COLUMNS_OF_PRODUCTS_LISTING);
-        productRepository.findAll().forEach(System.out::println);
+        productRepository.findAll().ifPresent(
+                products -> products.forEach(System.out::println));
         //TODO add method for matching column elements
     }
 
@@ -211,7 +228,6 @@ public class ConsoleDisplay {
     }
 
     private static void onExit() {
-        productRepository.saveDatabase();
         productRepository.close();
         isWorking = false;
         InputManager.close();

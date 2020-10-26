@@ -54,21 +54,32 @@ public class InputManager {
             return input;
         } else {
             scanner.nextLine();
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Wrong input, enter a double number.");
         }
     }
 
     static class DataWrapper {
 
         static Optional<Food> createFoodFromInput() {
+            double price = 0;
+            double mass = 0;
             System.out.println(CREATING_PRODUCT_NAME);
             String name = InputManager.getStringInput().orElse("");
 
             System.out.println(CREATING_PRODUCT_PRICE);
-            double price = InputManager.getDoubleInput();
+            try {
+                price = InputManager.getDoubleInput();
+            } catch (IllegalArgumentException ex) {
+                System.err.println(ex.getMessage());
+                return Optional.empty();
+            }
 
             System.out.println(CREATING_FOOD_MASS);
-            double mass = InputManager.getDoubleInput();
+            try {
+                mass = InputManager.getDoubleInput();
+            } catch (IllegalArgumentException ex) {
+                System.err.println(ex.getMessage());
+            }
 
             if (!name.isBlank() && price > 0 && mass > 0)
                 return Optional.of(new Food(name, price, mass));
@@ -76,14 +87,25 @@ public class InputManager {
         }
 
         static Optional<Drink> createDrinkFromInput() {
+            double price = 0;
+            double capacity = 0;
             System.out.println(CREATING_PRODUCT_NAME);
             String name = InputManager.getStringInput().orElse("");
 
             System.out.println(CREATING_PRODUCT_PRICE);
-            double price = InputManager.getDoubleInput();
+            try {
+                price = InputManager.getDoubleInput();
+            } catch (IllegalArgumentException ex) {
+                System.err.println(ex.getMessage());
+                return Optional.empty();
+            }
 
             System.out.println(CREATING_DRINK_CAPACITY);
-            double capacity = InputManager.getDoubleInput();
+            try {
+                capacity = InputManager.getDoubleInput();
+            } catch (IllegalArgumentException ex) {
+                System.err.println(ex.getMessage());
+            }
 
             if (!name.isBlank() && price > 0 && capacity > 0)
                 return Optional.of(new Drink(name, price, capacity));
