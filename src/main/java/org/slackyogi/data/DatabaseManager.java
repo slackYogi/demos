@@ -6,6 +6,7 @@ import org.slackyogi.model.Product;
 import org.slackyogi.model.enums.ProductType;
 
 import java.sql.*;
+import java.util.Optional;
 import java.util.TreeSet;
 
 public class DatabaseManager {
@@ -35,6 +36,12 @@ public class DatabaseManager {
 
     private PreparedStatement insertIntoFoods;
     private PreparedStatement insertIntoDrinks;
+    private PreparedStatement queryFoodsByName;
+    private PreparedStatement queryDrinksByName;
+    private PreparedStatement deleteFoodsByName;
+    private PreparedStatement deleteDrinksByName;
+    private PreparedStatement updateFoodsByName;
+    private PreparedStatement updateDrinksByName;
 
     private static final String INSERT_FOODS = "INSERT INTO " + TABLE_FOOD +
             '(' + COLUMN_FOOD_NAME + ", " + COLUMN_FOOD_PRICE + ", " + COLUMN_FOOD_MASS +
@@ -42,18 +49,116 @@ public class DatabaseManager {
     private static final String INSERT_DRINKS = "INSERT INTO " + TABLE_DRINK +
             '(' + COLUMN_DRINK_NAME + ", " + COLUMN_DRINK_PRICE + ", " + COLUMN_DRINK_CAPACITY +
             ") VALUES (?, ?, ?)";
+    private static final String QUERY_FOODS =
+            "SELECT * FROM " + TABLE_FOOD + " WHERE " + COLUMN_FOOD_NAME + " = ?";
+    private static final String QUERY_DRINKS =
+            "SELECT * FROM " + TABLE_DRINK + " WHERE " + COLUMN_DRINK_NAME + " = ?";
+    private static final String DELETE_FOODS_BY_NAME =
+            "DELETE FROM " + TABLE_FOOD + " WHERE " + COLUMN_FOOD_NAME + " = ?";
+    private static final String DELETE_DRINKS_BY_NAME =
+            "DELETE FROM " + TABLE_DRINK + " WHERE " + COLUMN_DRINK_NAME + " = ?";
+    private static final String UPDATE_DRINKS_BY_NAME =
+            "UPDATE " + TABLE_DRINK
+                    + " SET " + COLUMN_DRINK_NAME + " = ?, "
+                    + COLUMN_DRINK_PRICE + " = ?, "
+                    + COLUMN_DRINK_CAPACITY + " = ? "
+                    + "WHERE " + COLUMN_DRINK_NAME + " = ?";
+    private static final String UPDATE_FOODS_BY_NAME =
+            "UPDATE " + TABLE_FOOD
+                    + " SET " + COLUMN_FOOD_NAME + " = ?, "
+                    + COLUMN_FOOD_PRICE + " = ?, "
+                    + COLUMN_FOOD_MASS + " = ? "
+                    + "WHERE " + COLUMN_DRINK_NAME + " = ?";
 
 
-    //TODO use Optional
-    public TreeSet<Product> queryProducts() {
-        TreeSet<Product> products = new TreeSet<>();
-        products.addAll(queryFoods());
-        products.addAll(queryDrinks());
-        return products;
+    public Optional<Drink> queryDrinksByName(String name) {
+        Drink drink = new Drink(ProductType.DRINK);
+        try {
+            queryDrinksByName.setString(1, name);
+            ResultSet result = queryDrinksByName.executeQuery();
+            if (!result.isClosed()) {
+                drink.setName(result.getString(2));
+                drink.setPrice(result.getDouble(3));
+                drink.setCapacity(result.getDouble(4));
+                return Optional.of(drink);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return Optional.empty();
     }
 
-    //TODO use Optional
-    public TreeSet<Food> queryFoods() {
+    public void updateFood(String name, Food newFood) throws SQLException {
+        if (queryFoodsByName(name).isPresent()) {
+            try {
+                updateFoodsByName.setString(1, newFood.getName());
+                updateFoodsByName.setDouble(2, newFood.getPrice());
+                updateFoodsByName.setDouble(3, newFood.getMass());
+                updateFoodsByName.setString(4, name);
+                updateFoodsByName.execute();
+            } catch (SQLException ex) {
+                throw new SQLException("Couldn't update food product.");
+            }
+        }
+    }
+
+    public void updateDrink(String name, Drink newDrink) throws SQLException {
+        if (queryDrinksByName(name).isPresent()) {
+            try {
+                updateDrinksByName.setString(1, newDrink.getName());
+                updateDrinksByName.setDouble(2, newDrink.getPrice());
+                updateDrinksByName.setDouble(3, newDrink.getCapacity());
+                updateDrinksByName.setString(4, name);
+                updateDrinksByName.execute();
+            } catch (SQLException ex) {
+                throw new SQLException("Couldn't update drink product.");
+            }
+        }
+    }
+
+    public void deleteFood(String name) throws SQLException {
+        if (queryFoodsByName(name).isPresent()) {
+            deleteFoodsByName.setString(1, name);
+            deleteFoodsByName.execute();
+        }
+    }
+
+    public void deleteDrink(String name) throws SQLException {
+        if (queryDrinksByName(name).isPresent()) {
+            deleteDrinksByName.setString(1, name);
+            deleteDrinksByName.execute();
+        }
+    }
+
+    public Optional<Food> queryFoodsByName(String name) {
+        Food food = new Food(ProductType.FOOD);
+        try {
+            queryFoodsByName.setString(1, name);
+            ResultSet result = queryFoodsByName.executeQuery();
+            if (!result.isClosed()) {
+                food.setName(result.getString(2));
+                food.setPrice(result.getDouble(3));
+                food.setMass(result.getDouble(4));
+                return Optional.of(food);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return Optional.empty();
+    }
+
+    public Optional<TreeSet<Product>> queryProducts() {
+        TreeSet<Product> products = new TreeSet<>();
+        queryFoodsByName().ifPresent(products::addAll);
+        queryDrinksByName().ifPresent(products::addAll);
+        if (!products.isEmpty()) {
+            return Optional.of(products);
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public Optional<TreeSet<Food>> queryFoodsByName() {
         StringBuilder sb = new StringBuilder("SELECT * FROM ");
         sb.append(TABLE_FOOD);
 
@@ -65,19 +170,22 @@ public class DatabaseManager {
                 Food food = new Food(ProductType.FOOD);
                 food.setId(results.getInt(INDEX_FOOD_ID));
                 food.setName(results.getString(INDEX_FOOD_NAME));
-                food.setPrice(results.getInt(INDEX_FOOD_PRICE));
+                food.setPrice(results.getDouble(INDEX_FOOD_PRICE));
                 food.setMass(results.getInt(INDEX_FOOD_MASS));
                 foods.add(food);
             }
-            return foods;
+            if (!foods.isEmpty()) {
+                return Optional.of(foods);
+            } else {
+                return Optional.empty();
+            }
         } catch (SQLException e) {
             System.out.println("Query failed: " + e.getMessage());
-            return null;
+            return Optional.empty();
         }
     }
 
-    //TODO use Optional
-    public TreeSet<Drink> queryDrinks() {
+    public Optional<TreeSet<Drink>> queryDrinksByName() {
         StringBuilder sb = new StringBuilder("SELECT * FROM ");
         sb.append(TABLE_DRINK);
 
@@ -89,11 +197,15 @@ public class DatabaseManager {
                 Drink drink = new Drink(ProductType.DRINK);
                 drink.setId(results.getInt(INDEX_DRINK_ID));
                 drink.setName(results.getString(INDEX_DRINK_NAME));
-                drink.setPrice(results.getInt(INDEX_DRINK_PRICE));
+                drink.setPrice(results.getDouble(INDEX_DRINK_PRICE));
                 drink.setCapacity(results.getInt(INDEX_DRINK_CAPACITY));
                 drinks.add(drink);
             }
-            return drinks;
+            if (!drinks.isEmpty()) {
+                return Optional.of(drinks);
+            } else {
+                return Optional.empty();
+            }
         } catch (SQLException e) {
             System.out.println("Query failed: " + e.getMessage());
             return null;
@@ -122,34 +234,18 @@ public class DatabaseManager {
         }
     }
 
-//    public void exportData(TreeSet<Product> treeSet) throws IOException {
-//        try (ObjectOutputStream stream = new ObjectOutputStream(new FileOutputStream(FILE_NAME))) {
-//            stream.writeObject(treeSet);
-//        } catch (FileNotFoundException ex) {
-//            throw new FileNotFoundException(ERROR_FILE_NOT_FOUND + FILE_NAME);
-//        } catch (IOException ex) {
-//            throw new IOException(ERROR_WRITING_TO_A_FILE + FILE_NAME);
-//        }
-//    }
-
-//    public Optional<TreeSet<Product>> importData() throws IOException, ClassNotFoundException {
-//        try (ObjectInputStream stream = new ObjectInputStream(new FileInputStream(FILE_NAME))) {
-//            return Optional.of((TreeSet<Product>) stream.readObject());
-//        } catch (FileNotFoundException ex) {
-//            throw new FileNotFoundException(ERROR_FILE_NOT_FOUND + FILE_NAME);
-//        } catch (IOException ex) {
-//            throw new IOException(ERROR_READING_FROM_A_FILE + FILE_NAME);
-//        } catch (ClassNotFoundException ex) {
-//            throw new ClassNotFoundException(ERROR_DESERIALIZING_DATA_TO_A_CLASS.toString());
-//        }
-//    }
-
     public void open() {
         try {
             conn = DriverManager.getConnection(CONNECTION_STRING);
             insertIntoFoods = conn.prepareStatement(INSERT_FOODS);
             insertIntoDrinks = conn.prepareStatement(INSERT_DRINKS);
-
+            queryFoodsByName = conn.prepareStatement(QUERY_FOODS);
+            queryDrinksByName = conn.prepareStatement(QUERY_DRINKS);
+            deleteDrinksByName = conn.prepareStatement(DELETE_DRINKS_BY_NAME);
+            deleteFoodsByName = conn.prepareStatement(DELETE_FOODS_BY_NAME);
+            updateFoodsByName = conn.prepareStatement(UPDATE_FOODS_BY_NAME);
+            updateDrinksByName = conn.prepareStatement(UPDATE_DRINKS_BY_NAME);
+            System.out.println();
         } catch (SQLException ex) {
             ex.getStackTrace();
         }
@@ -157,6 +253,19 @@ public class DatabaseManager {
 
     public void close() {
         try {
+
+            if (updateFoodsByName != null)
+                updateFoodsByName.close();
+            if (updateDrinksByName != null)
+                updateDrinksByName.close();
+            if (deleteDrinksByName != null)
+                deleteDrinksByName.close();
+            if (deleteFoodsByName != null)
+                deleteFoodsByName.close();
+            if (queryDrinksByName != null)
+                queryDrinksByName.close();
+            if (queryFoodsByName != null)
+                queryFoodsByName.close();
             if (insertIntoFoods != null)
                 insertIntoFoods.close();
             if (insertIntoDrinks != null)

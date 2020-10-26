@@ -31,7 +31,8 @@ public class Food extends Product {
         this.mass = mass;
     }
 
-
-
+    public double getMass() {
+        return mass;
+    }
 
 }
