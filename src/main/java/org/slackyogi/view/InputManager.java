@@ -49,22 +49,25 @@ public class InputManager {
         static Optional<Food> createFoodFromInput() {
             double price = 0;
             double mass = 0;
+            Optional<Double> doubleCandidate;
+
             System.out.println(CREATING_PRODUCT_NAME);
             String name = InputManager.getStringInput();
 
             System.out.println(CREATING_PRODUCT_PRICE);
-            try {
-                price = InputManager.getDoubleInput().orElse(0.0);
-            } catch (IllegalArgumentException ex) {
-                System.err.println(ex.getMessage());
+            doubleCandidate = InputManager.getDoubleInput();
+            if (doubleCandidate.isPresent()) {
+                price = doubleCandidate.get();
+            } else {
                 return Optional.empty();
             }
 
             System.out.println(CREATING_FOOD_MASS);
-            try {
-                mass = InputManager.getDoubleInput().orElse(0.0);
-            } catch (IllegalArgumentException ex) {
-                System.err.println(ex.getMessage());
+            doubleCandidate = InputManager.getDoubleInput();
+            if (doubleCandidate.isPresent()) {
+                mass = doubleCandidate.get();
+            } else {
+                return Optional.empty();
             }
 
             if (!name.isBlank() && price > 0 && mass > 0)
@@ -75,22 +78,25 @@ public class InputManager {
         static Optional<Drink> createDrinkFromInput() {
             double price = 0;
             double capacity = 0;
+            Optional<Double> doubleCandidate;
+
             System.out.println(CREATING_PRODUCT_NAME);
             String name = InputManager.getStringInput();
 
             System.out.println(CREATING_PRODUCT_PRICE);
-            try {
-                price = InputManager.getDoubleInput().orElse(0.0);
-            } catch (IllegalArgumentException ex) {
-                System.err.println(ex.getMessage());
+            doubleCandidate = InputManager.getDoubleInput();
+            if (doubleCandidate.isPresent()) {
+                price = doubleCandidate.get();
+            } else {
                 return Optional.empty();
             }
 
             System.out.println(CREATING_DRINK_CAPACITY);
-            try {
-                capacity = InputManager.getDoubleInput().orElse(0.0);
-            } catch (IllegalArgumentException ex) {
-                System.err.println(ex.getMessage());
+            doubleCandidate = InputManager.getDoubleInput();
+            if (doubleCandidate.isPresent()) {
+                capacity = doubleCandidate.get();
+            } else {
+                return Optional.empty();
             }
 
             if (!name.isBlank() && price > 0 && capacity > 0)
@@ -99,11 +105,19 @@ public class InputManager {
         }
 
         static Optional<OrderItem> createOrderItemFromInput() {
+            Optional<Integer> possibleInt;
+            int quantity;
+
             System.out.println(ADDING_TO_ORDER_PRODUCT_NAME);
             String name = InputManager.getStringInput();
 
             System.out.println(ADDING_TO_ORDER_PRODUCT_QUANTITY);
-            int quantity = InputManager.getIntInput().orElse(0);
+            possibleInt = InputManager.getIntInput();
+            if (possibleInt.isPresent()) {
+                quantity = possibleInt.get();
+            } else {
+                return Optional.empty();
+            }
 
             if (!name.isBlank() && quantity > 0)
                 return Optional.of(new OrderItem(name, quantity));
