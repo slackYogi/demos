@@ -8,7 +8,6 @@ import org.slackyogi.view.enums.MenuOption;
 
 import java.sql.SQLException;
 import java.util.HashSet;
-import java.util.InputMismatchException;
 import java.util.Optional;
 
 import static org.slackyogi.view.enums.Message.*;
@@ -33,13 +32,11 @@ public class ConsoleDisplay {
     }
 
     private static void getUsersChoice() {
-        try {
-            MenuOption.fromNumber(InputManager.getIntInput())
-                    .ifPresentOrElse(option -> actOnUsersChoice(option),
-                            () -> System.err.println(ERROR_ENTER_NUMBER_FROM_RANGE));
-        } catch (InputMismatchException ex) {
-            System.err.println(ERROR_NOT_NUMBER);
-        }
+        InputManager.getIntInput()
+                .ifPresentOrElse(integer -> MenuOption.fromNumber(integer)
+                                .ifPresentOrElse(menuOption -> actOnUsersChoice(menuOption),
+                                        () -> System.err.println(ERROR_ENTER_NUMBER_FROM_RANGE)),
+                        () -> System.err.println(ERROR_NOT_NUMBER));
     }
 
     private static void actOnUsersChoice(MenuOption option) { //TODO Instead of switch create abstract class Page and Pages for each switch case?
@@ -99,7 +96,7 @@ public class ConsoleDisplay {
                 break;
             case REMOVE_PRODUCT_FROM_STORE:
                 if (userIsAdmin) {
-                     tryToDeleteProduct();
+                    tryToDeleteProduct();
                 }
                 break;
             case RELOG:
@@ -114,7 +111,7 @@ public class ConsoleDisplay {
         }
     }
 
-        private static void tryToDeleteProduct() {
+    private static void tryToDeleteProduct() {
         System.out.println(ENTER_PRODUCT_NAME_FOR_DELETION);
         getProductByName()
                 .ifPresentOrElse(product -> productRepository.delete(product),
@@ -122,7 +119,7 @@ public class ConsoleDisplay {
     }
 
     private static boolean isProductAvailable() {
-        return productRepository.findByName(InputManager.getStringInput().orElse("")).isPresent();
+        return productRepository.findByName(InputManager.getStringInput()).isPresent();
     }
 
     private static void addProductToStore() {
@@ -130,8 +127,7 @@ public class ConsoleDisplay {
         System.out.println(ENTER_TYPE_OF_PRODUCT_YOU_WANT_TO_CREATE);
 
         Optional<ProductType> productType = ProductType
-                .fromString(InputManager.getStringInput()
-                        .orElse(""));
+                .fromString(InputManager.getStringInput());
 
         if (productType.isPresent()) {
             switch (productType.get()) {
@@ -140,7 +136,7 @@ public class ConsoleDisplay {
                             .ifPresentOrElse(product -> {
                                         try {
                                             productRepository.addProduct(product);
-                                        } catch (SQLException ex) {
+                                        } catch (SQLException | IllegalArgumentException ex) {
                                             System.err.println(ex.getMessage());
                                         }
                                     },
@@ -188,7 +184,7 @@ public class ConsoleDisplay {
     }
 
     private static Optional<Product> getProductByName() {
-         return productRepository.findByName(InputManager.getStringInput().orElse(""));
+        return productRepository.findByName(InputManager.getStringInput());
     }
 
     private static void printMenu() {
@@ -217,7 +213,7 @@ public class ConsoleDisplay {
 
     private static void loggingIn() {
         System.out.println(LOGGING);
-        String login = InputManager.getStringInput().orElse("guest");
+        String login = InputManager.getStringInput();
         if (login.equals("admin")) {
             System.out.println(LOGGED_EMPLOYEE);
             userIsAdmin = true;
@@ -230,6 +226,5 @@ public class ConsoleDisplay {
     private static void onExit() {
         productRepository.close();
         isWorking = false;
-        InputManager.close();
     }
 }

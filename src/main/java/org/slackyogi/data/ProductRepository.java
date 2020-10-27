@@ -9,16 +9,16 @@ import java.sql.SQLException;
 import java.util.Optional;
 import java.util.TreeSet;
 
+import static org.slackyogi.view.enums.Message.ERROR_PRODUCT_TYPE_NOT_DEFINED;
+
 public class ProductRepository implements Serializable {
 
-    private static TreeSet<Product> products = new TreeSet<>();
     private DatabaseManager databaseManager;
 
     public ProductRepository(DatabaseManager databaseManager) {
         this.databaseManager = databaseManager;
         databaseManager.open();
         databaseManager.populateDB();
-        databaseManager.queryProducts().ifPresent(prod -> products = prod);
     }
 
     public void addProduct(Product product) throws SQLException {
@@ -32,7 +32,7 @@ public class ProductRepository implements Serializable {
                 databaseManager.insertDrink(drink.getName(), drink.getPrice(), drink.getCapacity());
                 break;
             default:
-                break;
+                throw new IllegalArgumentException(product.getType() + ERROR_PRODUCT_TYPE_NOT_DEFINED.toString());
         }
     }
 
@@ -55,11 +55,7 @@ public class ProductRepository implements Serializable {
 
     public int count() {
         Optional<TreeSet<Product>> products = findAll();
-        if (products.isPresent()) {
-            return products.get().size();
-        } else {
-            return 0;
-        }
+        return products.map(TreeSet::size).orElse(0);
     }
 
     public void delete(Product product) {

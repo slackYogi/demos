@@ -9,6 +9,8 @@ import java.sql.*;
 import java.util.Optional;
 import java.util.TreeSet;
 
+import static org.slackyogi.view.enums.Message.*;
+
 public class DatabaseManager {
     private static final String DATABASE_NAME = "database.db";
     private static final String CONNECTION_STRING = "jdbc:sqlite:src\\main\\resources\\" + DATABASE_NAME;
@@ -69,24 +71,8 @@ public class DatabaseManager {
                     + COLUMN_FOOD_PRICE + " = ?, "
                     + COLUMN_FOOD_MASS + " = ? "
                     + "WHERE " + COLUMN_DRINK_NAME + " = ?";
+    private static final String SELECT_ALL = "SELECT * FROM ";
 
-
-    public Optional<Drink> queryDrinksByName(String name) {
-        Drink drink = new Drink(ProductType.DRINK);
-        try {
-            queryDrinksByName.setString(1, name);
-            ResultSet result = queryDrinksByName.executeQuery();
-            if (!result.isClosed()) {
-                drink.setName(result.getString(2));
-                drink.setPrice(result.getDouble(3));
-                drink.setCapacity(result.getDouble(4));
-                return Optional.of(drink);
-            }
-        } catch (SQLException ex) {
-            ex.printStackTrace();
-        }
-        return Optional.empty();
-    }
 
     public void updateFood(String name, Food newFood) throws SQLException {
         if (queryFoodsByName(name).isPresent()) {
@@ -97,7 +83,7 @@ public class DatabaseManager {
                 updateFoodsByName.setString(4, name);
                 updateFoodsByName.execute();
             } catch (SQLException ex) {
-                throw new SQLException("Couldn't update food product.");
+                throw new SQLException(DATABASE_PRODUCT_NOT_UPDATED + newFood.getType().toString());
             }
         }
     }
@@ -111,7 +97,7 @@ public class DatabaseManager {
                 updateDrinksByName.setString(4, name);
                 updateDrinksByName.execute();
             } catch (SQLException ex) {
-                throw new SQLException("Couldn't update drink product.");
+                throw new SQLException(DATABASE_PRODUCT_NOT_UPDATED + newDrink.getType().toString());
             }
         }
     }
@@ -128,6 +114,23 @@ public class DatabaseManager {
             deleteDrinksByName.setString(1, name);
             deleteDrinksByName.execute();
         }
+    }
+
+    public Optional<Drink> queryDrinksByName(String name) {
+        Drink drink = new Drink(ProductType.DRINK);
+        try {
+            queryDrinksByName.setString(1, name);
+            ResultSet result = queryDrinksByName.executeQuery();
+            if (!result.isClosed()) {
+                drink.setName(result.getString(2));
+                drink.setPrice(result.getDouble(3));
+                drink.setCapacity(result.getDouble(4));
+                return Optional.of(drink);
+            }
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+        return Optional.empty();
     }
 
     public Optional<Food> queryFoodsByName(String name) {
@@ -149,8 +152,8 @@ public class DatabaseManager {
 
     public Optional<TreeSet<Product>> queryProducts() {
         TreeSet<Product> products = new TreeSet<>();
-        queryFoodsByName().ifPresent(products::addAll);
-        queryDrinksByName().ifPresent(products::addAll);
+        queryFoods().ifPresent(products::addAll);
+        queryDrinks().ifPresent(products::addAll);
         if (!products.isEmpty()) {
             return Optional.of(products);
         } else {
@@ -158,8 +161,8 @@ public class DatabaseManager {
         }
     }
 
-    public Optional<TreeSet<Food>> queryFoodsByName() {
-        StringBuilder sb = new StringBuilder("SELECT * FROM ");
+    public Optional<TreeSet<Food>> queryFoods() {
+        StringBuilder sb = new StringBuilder(SELECT_ALL);
         sb.append(TABLE_FOOD);
 
         try (Statement statement = conn.createStatement();
@@ -179,14 +182,14 @@ public class DatabaseManager {
             } else {
                 return Optional.empty();
             }
-        } catch (SQLException e) {
-            System.out.println("Query failed: " + e.getMessage());
-            return Optional.empty();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
+        return Optional.empty();
     }
 
-    public Optional<TreeSet<Drink>> queryDrinksByName() {
-        StringBuilder sb = new StringBuilder("SELECT * FROM ");
+    public Optional<TreeSet<Drink>> queryDrinks() {
+        StringBuilder sb = new StringBuilder(SELECT_ALL);
         sb.append(TABLE_DRINK);
 
         try (Statement statement = conn.createStatement();
@@ -206,10 +209,10 @@ public class DatabaseManager {
             } else {
                 return Optional.empty();
             }
-        } catch (SQLException e) {
-            System.out.println("Query failed: " + e.getMessage());
-            return null;
+        } catch (SQLException ex) {
+            ex.printStackTrace();
         }
+        return Optional.empty();
     }
 
     public void insertFood(String name, double price, double mass) throws SQLException {
@@ -219,7 +222,7 @@ public class DatabaseManager {
         int affectedRows = insertIntoFoods.executeUpdate();
 
         if (affectedRows != 1) {
-            throw new SQLException("Couldn't insert food!");
+            throw new SQLException(DATABASE_ERROR_INSERTING_PRODUCT.toString());
         }
     }
 
@@ -230,7 +233,7 @@ public class DatabaseManager {
         int affectedRows = insertIntoDrinks.executeUpdate();
 
         if (affectedRows != 1) {
-            throw new SQLException("Couldn't insert drink!");
+            throw new SQLException(DATABASE_ERROR_INSERTING_PRODUCT.toString());
         }
     }
 

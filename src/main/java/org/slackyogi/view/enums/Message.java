@@ -20,16 +20,14 @@ public enum Message {
     CREATING_FOOD_MASS("Please enter new food mass:"),
     CREATING_DRINK_CAPACITY("Please enter new drink capacity:"),
     ERROR_WRONG_INPUT_PRODUCT_CREATION("Wrong input, product not added."),
-    ERROR_NOT_NUMBER("You did not enter a number."),
+    ERROR_NOT_NUMBER("You did not enter a number or number format was incorrect."),
     ERROR_ENTER_NUMBER_FROM_RANGE("Please enter a number from range of available options."),
     ERROR_NO_SUCH_PRODUCT_AVAILABLE("No such product is available in store."),
     ERROR_NO_SUCH_PRODUCT_IN_ORDER("No such product in order."),
     ERROR_WRONG_PRODUCT_TYPE("Store does not have product of such type."),
-    ERROR_FILE_NOT_FOUND("Have not found file: "),
-    ERROR_WRITING_TO_A_FILE("Error writing to a file: "),
-    ERROR_READING_FROM_A_FILE("Error reading from a file: "),
-    ERROR_DESERIALIZING_DATA_TO_A_CLASS("Could not deserialize data to a class."),
-    ERROR_CONNECTING_OR_CREATING_DATABASE("Error connecting to database or creating new one.");
+    ERROR_PRODUCT_TYPE_NOT_DEFINED(" - product type not defined, product not added."),
+    DATABASE_PRODUCT_NOT_UPDATED("Couldn't update product of type: "),
+    DATABASE_ERROR_INSERTING_PRODUCT("Could not insert product.");
 
     private final String message;
 
